@@ -1,0 +1,198 @@
+import {
+  createContext,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  loadTemplate,
+  resetTemplate,
+  saveTemplate,
+} from "../persistence/localStorage";
+import { dispatchCommand } from "./pipeline";
+import { settleAcceptedGroups } from "./proposalStore";
+import type {
+  EditCommand,
+  ElementId,
+  PendingProposal,
+  PipelineResult,
+  ScopeContext,
+  StrategyGroup,
+  TemplateState,
+  Viewport,
+  ViewportScope,
+} from "./types";
+
+interface EditorState {
+  template: TemplateState;
+  viewport: Viewport;
+  editScope: ViewportScope;
+  selectedIds: ElementId[];
+  strategyGroups: StrategyGroup[];
+  activeStrategyId: string | null;
+  previewProposalId: string | null;
+  /** Viewport to restore when a viewport-scoped proposal preview is stopped. */
+  previewReturnViewport: Viewport | null;
+  lastError: string | null;
+}
+interface EditorActions {
+  dispatch: (command: EditCommand, context?: ScopeContext) => PipelineResult;
+  setViewport: (viewport: Viewport) => void;
+  setEditScope: (scope: ViewportScope) => void;
+  select: (id: ElementId, additive?: boolean) => void;
+  setStrategyGroups: (items: StrategyGroup[]) => void;
+  setActiveStrategy: (id: string) => void;
+  setPreviewProposal: (id: string | null) => void;
+  /** Atomically start a proposal preview, switching viewport if scope requires it. */
+  startPreviewProposal: (id: string, scope: ViewportScope) => void;
+  /** Atomically stop a proposal preview, restoring the prior viewport if it was switched. */
+  stopPreviewProposal: (id: string, scope: ViewportScope) => void;
+  updateProposal: (id: string, patch: Partial<PendingProposal>) => void;
+  settleAcceptedProposal: (
+    id: string,
+    templateVersion: number,
+    targetIds: ElementId[],
+  ) => void;
+  reset: () => void;
+}
+interface EditorContextValue {
+  state: EditorState;
+  actions: EditorActions;
+}
+const EditorContext = createContext<EditorContextValue | null>(null);
+
+export function EditorProvider({ children }: { children: ReactNode }) {
+  const [state, setState] = useState<EditorState>(() => ({
+    template: loadTemplate(),
+    viewport: "desktop",
+    editScope: "all",
+    selectedIds: ["headline"],
+    strategyGroups: [],
+    activeStrategyId: null,
+    previewProposalId: null,
+    previewReturnViewport: null,
+    lastError: null,
+  }));
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+  useEffect(() => {
+    saveTemplate(state.template);
+  }, [state.template]);
+  const dispatch = useCallback(
+    (command: EditCommand, context: ScopeContext = {}) => {
+      const outcome = dispatchCommand(
+        stateRef.current.template,
+        command,
+        context,
+      );
+      setState((current) =>
+        outcome.ok
+          ? { ...current, template: outcome.state, lastError: null }
+          : { ...current, lastError: outcome.error.detail },
+      );
+      return outcome;
+    },
+    [],
+  );
+  const actions = useMemo<EditorActions>(
+    () => ({
+      dispatch,
+      setViewport: (viewport) => setState((s) => ({ ...s, viewport })),
+      setEditScope: (editScope) => setState((s) => ({ ...s, editScope })),
+      select: (id, additive = false) =>
+        setState((s) => ({
+          ...s,
+          selectedIds: additive
+            ? s.selectedIds.includes(id)
+              ? s.selectedIds.filter((item) => item !== id)
+              : [...s.selectedIds, id]
+            : [id],
+        })),
+      setStrategyGroups: (strategyGroups) =>
+        setState((s) => ({
+          ...s,
+          strategyGroups,
+          activeStrategyId: strategyGroups[0]?.strategyId ?? null,
+          previewProposalId: null,
+        })),
+      setActiveStrategy: (activeStrategyId) =>
+        setState((s) => ({
+          ...s,
+          activeStrategyId,
+          previewProposalId: null,
+          previewReturnViewport: null,
+        })),
+      setPreviewProposal: (previewProposalId) =>
+        setState((s) => ({ ...s, previewProposalId })),
+      startPreviewProposal: (id, scope) =>
+        setState((s) => ({
+          ...s,
+          previewProposalId: id,
+          // If proposal targets a specific viewport, switch to it and remember where to return
+          viewport: scope !== "all" ? (scope as Viewport) : s.viewport,
+          previewReturnViewport: scope !== "all" ? s.viewport : null,
+        })),
+      stopPreviewProposal: (_id, scope) =>
+        setState((s) => ({
+          ...s,
+          previewProposalId: null,
+          // Restore the viewport we switched away from (if any)
+          viewport:
+            scope !== "all" && s.previewReturnViewport != null
+              ? s.previewReturnViewport
+              : s.viewport,
+          previewReturnViewport: null,
+        })),
+      updateProposal: (id, patch) =>
+        setState((s) => ({
+          ...s,
+          strategyGroups: s.strategyGroups.map((group) => ({
+            ...group,
+            proposals: group.proposals.map((item) =>
+              item.id === id ? { ...item, ...patch } : item,
+            ),
+          })),
+          previewProposalId:
+            s.previewProposalId === id && patch.status !== "pending"
+              ? null
+              : s.previewProposalId,
+        })),
+      settleAcceptedProposal: (id, templateVersion, targetIds) =>
+        setState((s) => ({
+          ...s,
+          strategyGroups: settleAcceptedGroups(
+            s.strategyGroups,
+            id,
+            templateVersion,
+            targetIds,
+          ),
+          previewProposalId: null,
+          previewReturnViewport: null,
+        })),
+      reset: () =>
+        setState((s) => ({
+          ...s,
+          template: resetTemplate(),
+          selectedIds: ["headline"],
+          strategyGroups: [],
+          activeStrategyId: null,
+          previewProposalId: null,
+          previewReturnViewport: null,
+          lastError: null,
+        })),
+    }),
+    [dispatch],
+  );
+  return <EditorContext value={{ state, actions }}>{children}</EditorContext>;
+}
+export function useEditor(): EditorContextValue {
+  const value = use(EditorContext);
+  if (!value) throw new Error("useEditor must be used inside EditorProvider");
+  return value;
+}

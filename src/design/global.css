@@ -1,0 +1,87 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+@theme inline {
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --color-primary: var(--primary);
+  --color-primary-active: var(--primary-active);
+  --color-secondary: var(--secondary);
+  --color-canvas: var(--canvas);
+  --color-canvas-soft: var(--canvas-soft);
+  --color-raised: var(--surface-raised);
+  --color-surface-hover: var(--surface-hover);
+  --color-workspace: var(--workspace);
+  --color-hairline: var(--hairline);
+  --color-border-default: var(--border-default);
+  --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-success: var(--status-success);
+  --color-pending: var(--status-pending);
+  --color-danger: var(--status-danger);
+  --color-selection: var(--selection-fill);
+  --color-danger-surface: var(--danger-surface);
+  --color-danger-border: var(--danger-border);
+  --color-warning-surface: var(--warning-surface);
+  --color-warning-border: var(--warning-border);
+  --shadow-flat: var(--shadow-flat);
+  --shadow-soft: var(--shadow-soft);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+  body {
+    @apply m-0 overflow-hidden bg-canvas-soft font-sans text-ink;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+  button,
+  select,
+  input[type="color"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 117, 222, 0.14);
+  }
+  :is(button, input, select, textarea, [tabindex]):focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+}
+
+.template-element,
+.services {
+  position: relative;
+}
+.template-element.is-selected::after,
+.services.is-selected::after,
+.template-element.is-proposal-preview::after,
+.services.is-proposal-preview::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  pointer-events: none;
+  border: 2px solid var(--primary);
+  border-radius: 7px;
+}
+.template-element.is-proposal-preview::after,
+.services.is-proposal-preview::after {
+  border-style: dashed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

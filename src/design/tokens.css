@@ -1,0 +1,68 @@
+:root {
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  --primary: #0075de;
+  --primary-active: #005bab;
+  --secondary: #31302e;
+  --canvas: #fff;
+  --canvas-soft: #f6f5f4;
+  --surface-raised: #ffffff;
+  --surface-hover: #f2f1ef;
+  --workspace: #efeeec;
+  --hairline: #e6e6e6;
+  --border-default: #e6e6e6;
+  --ink: #0d0d0d;
+  --ink-secondary: #31302e;
+  --ink-muted: #615d59;
+  --ink-faint: #a39e98;
+  --status-success: #1a8f34;
+  --status-pending: #b94e00;
+  --status-danger: #b52f24;
+  --selection-fill: rgba(0, 117, 222, 0.08);
+  --danger-surface: #fff0ed;
+  --danger-border: #f0b7af;
+  --warning-surface: #fff7ed;
+  --warning-border: #fdba74;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 28px;
+  --space-7: 32px;
+  --radius-xs: 4px;
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  --shadow-flat: 0 0 0 1px var(--hairline);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.02), 0 4px 18px rgba(0, 0, 0, 0.04);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --primary: #62aef0;
+  --primary-active: #8bc4f5;
+  --secondary: #dfdcd8;
+  --canvas: #1b1b1a;
+  --canvas-soft: #121211;
+  --surface-raised: #242422;
+  --surface-hover: #302f2d;
+  --workspace: #0d0d0c;
+  --hairline: #3b3936;
+  --border-default: #3b3936;
+  --ink: #f5f4f2;
+  --ink-secondary: #dfdcd8;
+  --ink-muted: #b5afa9;
+  --ink-faint: #817b75;
+  --status-success: #58c56e;
+  --status-pending: #ff9f5a;
+  --status-danger: #ff8076;
+  --selection-fill: rgba(98, 174, 240, 0.16);
+  --danger-surface: #3a201f;
+  --danger-border: #713c38;
+  --warning-surface: #39291c;
+  --warning-border: #875629;
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 18px rgba(0, 0, 0, 0.24);
+}
