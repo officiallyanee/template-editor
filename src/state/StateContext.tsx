@@ -10,6 +10,7 @@ import {
 } from "react";
 import {
   loadGlobalCheckpoints,
+  loadActiveTemplateId,
   loadTemplate,
   resetTemplate,
   saveGlobalCheckpoints,
@@ -20,8 +21,10 @@ import {
   hasUnsavedVersion,
   type GlobalCheckpoint,
 } from "./globalHistory";
+import { planGlobalRestore, restoreGlobalCheckpoint } from "./globalRestore";
 import { dispatchCommand } from "./pipeline";
 import { settleAcceptedGroups } from "./proposalStore";
+import { freshTemplate } from "../templates/templateCatalog";
 import type {
   EditCommand,
   ElementId,
@@ -47,6 +50,7 @@ interface EditorState {
   previewProposalId: string | null;
   /** Viewport to restore when a viewport-scoped proposal preview is stopped. */
   previewReturnViewport: Viewport | null;
+  restorePreviewCheckpointId: string | null;
   lastError: string | null;
 }
 interface EditorActions {
@@ -68,6 +72,9 @@ interface EditorActions {
     targetIds: ElementId[],
   ) => void;
   saveVersion: () => void;
+  previewCheckpoint: (checkpointId: string | null) => void;
+  restoreCheckpoint: (checkpointId: string) => void;
+  switchTemplate: (templateId: string) => void;
   reset: () => void;
 }
 interface EditorContextValue {
@@ -78,8 +85,9 @@ const EditorContext = createContext<EditorContextValue | null>(null);
 
 export function EditorProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<EditorState>(() => {
-    const template = loadTemplate();
-    const checkpoints = loadGlobalCheckpoints();
+    const activeTemplateId = loadActiveTemplateId();
+    const template = loadTemplate(freshTemplate(activeTemplateId));
+    const checkpoints = loadGlobalCheckpoints(template.templateId);
     return {
       template,
       checkpoints,
@@ -92,6 +100,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       activeStrategyId: null,
       previewProposalId: null,
       previewReturnViewport: null,
+      restorePreviewCheckpointId: null,
       lastError: null,
     };
   });
@@ -113,7 +122,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       if (!checkpoint) return;
       const checkpoints = [...current.checkpoints, checkpoint];
       saveTemplate(current.template);
-      saveGlobalCheckpoints(checkpoints);
+      saveGlobalCheckpoints(current.template.templateId, checkpoints);
       const next = {
         ...current,
         checkpoints,
@@ -142,6 +151,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
               ...current,
               template: outcome.state,
               hasUnsavedVersion: true,
+              restorePreviewCheckpointId: null,
               lastError: null,
             }
           : { ...current, lastError: outcome.error.detail },
@@ -178,6 +188,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           strategyGroups,
           activeStrategyId: strategyGroups[0]?.strategyId ?? null,
           previewProposalId: null,
+          restorePreviewCheckpointId: null,
         })),
       setActiveStrategy: (activeStrategyId) =>
         setState((s) => ({
@@ -234,10 +245,86 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           previewReturnViewport: null,
         })),
       saveVersion: () => checkpointPendingVersion("manual", true),
-      reset: () =>
-        setState((s) => ({
-          ...s,
-          template: resetTemplate(),
+      previewCheckpoint: (checkpointId) =>
+        setState((s) => {
+          if (checkpointId == null)
+            return { ...s, restorePreviewCheckpointId: null, lastError: null };
+          const checkpoint = s.checkpoints.find(
+            (item) => item.checkpointId === checkpointId,
+          );
+          if (!checkpoint)
+            return { ...s, lastError: "That saved version no longer exists." };
+          const plan = planGlobalRestore(s.template, checkpoint);
+          return plan.ok
+            ? {
+                ...s,
+                restorePreviewCheckpointId: checkpointId,
+                previewProposalId: null,
+                lastError: null,
+              }
+            : { ...s, lastError: plan.detail };
+        }),
+      restoreCheckpoint: (checkpointId) => {
+        const current = stateRef.current;
+        const result = restoreGlobalCheckpoint(
+          current.template,
+          current.checkpoints,
+          checkpointId,
+        );
+        if (!result.ok) {
+          setState((s) => ({ ...s, lastError: result.detail }));
+          return;
+        }
+        if (!result.changed) {
+          setState((s) => ({
+            ...s,
+            restorePreviewCheckpointId: null,
+            lastError: null,
+          }));
+          return;
+        }
+        saveTemplate(result.template);
+        saveGlobalCheckpoints(result.template.templateId, result.checkpoints);
+        const next: EditorState = {
+          ...current,
+          template: result.template,
+          checkpoints: result.checkpoints,
+          hasUnsavedVersion: false,
+          restorePreviewCheckpointId: null,
+          lastError: null,
+        };
+        stateRef.current = next;
+        setState(next);
+      },
+      switchTemplate: (templateId) => {
+        const current = stateRef.current;
+        const template = loadTemplate(freshTemplate(templateId));
+        const checkpoints = loadGlobalCheckpoints(templateId);
+        saveTemplate(template);
+        const next: EditorState = {
+          ...current,
+          template,
+          checkpoints,
+          hasUnsavedVersion: hasUnsavedVersion(template.version, checkpoints),
+          viewport: "desktop",
+          editScope: "all",
+          selectedIds: ["headline"],
+          activeId: "headline",
+          strategyGroups: [],
+          activeStrategyId: null,
+          previewProposalId: null,
+          previewReturnViewport: null,
+          restorePreviewCheckpointId: null,
+          lastError: null,
+        };
+        stateRef.current = next;
+        setState(next);
+      },
+      reset: () => {
+        const current = stateRef.current;
+        const next = {
+          ...current,
+          template: resetTemplate(freshTemplate(current.template.templateId)),
           checkpoints: [],
           hasUnsavedVersion: false,
           selectedIds: ["headline"],
@@ -246,8 +333,12 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           activeStrategyId: null,
           previewProposalId: null,
           previewReturnViewport: null,
+          restorePreviewCheckpointId: null,
           lastError: null,
-        })),
+        };
+        stateRef.current = next;
+        setState(next);
+      },
     }),
     [checkpointPendingVersion, dispatch],
   );

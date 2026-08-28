@@ -16,7 +16,7 @@ function ElementView({
   const { state, actions } = useEditor();
   const previewProposal = findProposal(
     state.strategyGroups,
-    state.previewProposalId,
+    state.restorePreviewCheckpointId ? null : state.previewProposalId,
   );
   const props = resolvedWithProposal(element, state.viewport, previewProposal);
   const editable = mode === "editable";

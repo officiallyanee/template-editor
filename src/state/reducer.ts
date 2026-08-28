@@ -1,5 +1,6 @@
 import { makeId } from "../utils/id";
 import type {
+  AtomicRestoreTransaction,
   EditCommand,
   ElementProperties,
   RevisionEntry,
@@ -118,4 +119,55 @@ export function applyEditCommand(
     changed = true;
   }
   return changed ? { ...state, version: nextVersion, elements } : state;
+}
+
+export function applyAtomicRestoreTransaction(
+  state: TemplateState,
+  transaction: AtomicRestoreTransaction,
+): TemplateState {
+  if (!transaction.commands.length) return state;
+  const nextVersion = state.version + 1;
+  const committedAt = Date.now();
+  const elements = { ...state.elements };
+
+  for (const command of transaction.commands) {
+    const id = command.targetIds[0];
+    const current = elements[id];
+    const patch = command.changes[id];
+    let updated: TemplateElement;
+    let beforeLayer: RevisionEntry["beforeLayer"];
+    let afterLayer: RevisionEntry["afterLayer"];
+
+    if (patch.op === "reorder") {
+      updated = { ...current, order: patch.order };
+      beforeLayer = { kind: "structure", order: current.order };
+      afterLayer = { kind: "structure", order: patch.order };
+    } else {
+      const before = propertiesLayer(current, command.viewportScope);
+      updated = replaceLayer(current, patch.values, command.viewportScope);
+      const after = propertiesLayer(updated, command.viewportScope);
+      beforeLayer = { kind: "properties", values: before };
+      afterLayer = { kind: "properties", values: after };
+    }
+
+    const entry: RevisionEntry = {
+      schemaVersion: 1,
+      revisionId: makeId("rev"),
+      commandId: transaction.transactionId,
+      elementId: id,
+      committedAt,
+      source: "restore",
+      viewportScope: command.viewportScope,
+      beforeLayer,
+      afterLayer,
+      templateVersion: nextVersion,
+      intent: {
+        kind: "global-restore",
+        restoredFromCheckpointId: transaction.restoredFromCheckpointId,
+      },
+    };
+    elements[id] = { ...updated, history: [...current.history, entry] };
+  }
+
+  return { ...state, version: nextVersion, elements };
 }

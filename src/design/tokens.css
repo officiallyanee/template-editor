@@ -1,34 +1,34 @@
 :root {
   --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-display:
-    Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-editorial-body:
-    Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-editorial-body: Lora, Georgia, "Times New Roman", serif;
   --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
-  --primary: #0075de;
-  --primary-active: #005bab;
-  --secondary: #31302e;
-  --canvas: #fff;
-  --canvas-soft: #f6f5f4;
+  --primary: #000000;
+  --primary-active: #1a1a1a;
+  --on-primary: #ffffff;
+  --secondary: #1a1a1a;
+  --canvas: #ffffff;
+  --canvas-soft: #f5f5f5;
   --surface-raised: #ffffff;
-  --surface-hover: #f2f1ef;
-  --workspace: #efeeec;
-  --hairline: #e6e6e6;
-  --border-default: #e6e6e6;
-  --ink: #0d0d0d;
-  --ink-secondary: #31302e;
-  --ink-muted: #615d59;
-  --ink-faint: #a39e98;
+  --surface-hover: #f5f5f5;
+  --workspace: #f5f5f5;
+  --hairline: #e0e0e0;
+  --border-default: #e0e0e0;
+  --ink: #000000;
+  --ink-secondary: #1a1a1a;
+  --ink-muted: #757575;
+  --ink-faint: #9a9a9a;
   --status-success: #1a8f34;
   --status-pending: #b94e00;
   --status-danger: #b52f24;
-  --selection-fill: rgba(0, 117, 222, 0.08);
+  --selection-fill: rgba(0, 0, 0, 0.08);
   --danger-surface: #fff0ed;
   --danger-border: #f0b7af;
   --warning-surface: #fff7ed;
   --warning-border: #fdba74;
-  --preview-surround-light: #f4f2ed;
-  --preview-surround-dark: #27292c;
+  --preview-surround-light: #fafafa;
+  --preview-surround-dark: #282828;
+  --preview-frame-border: #aaa7a2;
   --preview-chrome: #202225;
   --preview-chrome-control: #34373b;
   --preview-chrome-hover: #43474c;
@@ -42,36 +42,6 @@
   --space-5: 24px;
   --space-6: 28px;
   --space-7: 32px;
-  --radius-xs: 4px;
-  --radius-sm: 5px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-full: 9999px;
-  --shadow-flat: 0 0 0 1px var(--hairline);
-  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.02), 0 4px 18px rgba(0, 0, 0, 0.04);
-}
-
-:root[data-style="editorial"] {
-  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
-  --font-editorial-body: Lora, Georgia, "Times New Roman", serif;
-  --primary: #000000;
-  --primary-active: #1a1a1a;
-  --secondary: #1a1a1a;
-  --canvas: #ffffff;
-  --canvas-soft: #f5f5f5;
-  --surface-raised: #ffffff;
-  --surface-hover: #f5f5f5;
-  --workspace: #f5f5f5;
-  --hairline: #e0e0e0;
-  --border-default: #e0e0e0;
-  --ink: #000000;
-  --ink-secondary: #1a1a1a;
-  --ink-muted: #757575;
-  --ink-faint: #9a9a9a;
-  --selection-fill: rgba(0, 0, 0, 0.08);
-  --preview-surround-light: #f5f5f5;
-  --preview-surround-dark: #282828;
   --radius-xs: 0px;
   --radius-sm: 0px;
   --radius-md: 0px;
@@ -84,45 +54,29 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --primary: #75baff;
-  --primary-active: #9acbff;
-  --secondary: #e3e7ec;
-  --canvas: #1f2226;
-  --canvas-soft: #17191c;
-  --surface-raised: #292d32;
-  --surface-hover: #343940;
-  --workspace: #121416;
-  --hairline: #41474f;
-  --border-default: #6d7682;
-  --ink: #f7f8fa;
-  --ink-secondary: #e3e7ec;
-  --ink-muted: #bcc4ce;
-  --ink-faint: #929ca8;
-  --status-success: #58c56e;
-  --status-pending: #ff9f5a;
-  --status-danger: #ff8076;
-  --selection-fill: rgba(117, 186, 255, 0.18);
-  --danger-surface: #3a201f;
-  --danger-border: #713c38;
-  --warning-surface: #39291c;
-  --warning-border: #875629;
-  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 18px rgba(0, 0, 0, 0.24);
-}
-
-:root[data-style="editorial"][data-theme="dark"] {
   --primary: #ffffff;
   --primary-active: #e0e0e0;
+  --on-primary: #0d0d0d;
   --secondary: #f5f5f5;
   --canvas: #191919;
   --canvas-soft: #111111;
   --surface-raised: #242424;
   --surface-hover: #303030;
   --workspace: #0c0c0c;
-  --hairline: #404040;
-  --border-default: #737373;
+  --hairline: #303030;
+  --border-default: #444444;
   --ink: #ffffff;
   --ink-secondary: #f5f5f5;
   --ink-muted: #b8b8b8;
   --ink-faint: #929292;
+  --status-success: #58c56e;
+  --status-pending: #ff9f5a;
+  --status-danger: #ff8076;
   --selection-fill: rgba(255, 255, 255, 0.12);
+  --danger-surface: #3a201f;
+  --danger-border: #713c38;
+  --warning-surface: #39291c;
+  --warning-border: #875629;
+  --preview-frame-border: #555d66;
+  --shadow-soft: 0 0 0 1px var(--hairline);
 }

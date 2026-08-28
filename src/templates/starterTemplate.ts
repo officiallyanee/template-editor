@@ -7,7 +7,7 @@ function element(
   return { ...input, overrides: input.overrides ?? {}, history: [] };
 }
 export const starterTemplate: TemplateState = {
-  templateId: "brightpath-studio",
+  templateId: "example-studio",
   version: 1,
   rootId: "page",
   elements: {
@@ -31,7 +31,7 @@ export const starterTemplate: TemplateState = {
       parentId: "page",
       order: 0,
       base: {
-        text: "BRIGHTPATH STUDIO",
+        text: "EXAMPLE STUDIO",
         color: "#0067b9",
         fontSize: 13,
         fontWeight: 700,

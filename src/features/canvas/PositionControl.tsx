@@ -17,7 +17,7 @@ const positions: Array<{ value: AlignSelf; label: string }> = [
 
 export function PositionControl({ value, onChange }: PositionControlProps) {
   return (
-    <label className="flex items-center justify-between gap-3 rounded-lg border border-border-default bg-raised p-3">
+    <label className="flex items-center justify-between gap-3 rounded-lg border border-hairline bg-canvas-soft p-3">
       <span>
         <span className="block text-[11px] font-semibold tracking-[.04em] text-ink-muted uppercase">
           Position in Container
@@ -29,7 +29,7 @@ export function PositionControl({ value, onChange }: PositionControlProps) {
       <select
         aria-label="Position in Container"
         name="align-self"
-        className="rounded-lg border border-hairline bg-raised py-1.5 pr-7 pl-2 text-[13px] text-ink"
+        className="rounded-lg border border-border-default bg-raised py-1.5 pr-7 pl-2 text-[13px] text-ink"
         value={value}
         onChange={(event) => onChange(event.target.value as AlignSelf)}
       >

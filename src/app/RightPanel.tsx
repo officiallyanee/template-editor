@@ -16,11 +16,11 @@ export function RightPanel() {
   const [tab, setTab] = useState<(typeof tabs)[number]["id"]>("edit");
   return (
     <aside
-      className="min-h-0 overflow-hidden border-l border-border-default bg-canvas max-sm:border-t max-sm:border-l-0"
+      className="min-h-0 overflow-hidden border-l border-hairline bg-canvas max-sm:border-t max-sm:border-l-0"
       aria-label="Editing tools"
     >
       <div
-        className="grid grid-cols-5 border-b border-border-default"
+        className="grid grid-cols-5 border-b border-hairline"
         role="tablist"
         aria-label="Editing tools"
       >

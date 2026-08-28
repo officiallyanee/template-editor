@@ -1,5 +1,6 @@
-import { Clock3, History, Save } from "lucide-react";
+import { Clock3, Eye, History, RotateCcw, Save, X } from "lucide-react";
 import { Button } from "../../components/Button";
+import { planGlobalRestore } from "../../state/globalRestore";
 import { useEditor } from "../../state/StateContext";
 
 const timeFormat = new Intl.DateTimeFormat(undefined, {
@@ -16,6 +17,13 @@ export function ActivityPanel({
   const checkpoints = [...state.checkpoints].sort(
     (left, right) => right.savedAt - left.savedAt,
   );
+  const previewed = checkpoints.find(
+    (checkpoint) =>
+      checkpoint.checkpointId === state.restorePreviewCheckpointId,
+  );
+  const restorePlan = previewed
+    ? planGlobalRestore(state.template, previewed)
+    : null;
 
   if (!checkpoints.length)
     return (
@@ -42,8 +50,8 @@ export function ActivityPanel({
           <div className="min-w-0">
             <h2 className="text-lg font-bold text-balance">Saved Versions</h2>
             <p className="mt-1 text-xs leading-normal text-ink-muted">
-              Document checkpoints group edits; recovery stays scoped to each
-              element.
+              Each save stores the exact document layers. Previewing never
+              changes the live template.
             </p>
           </div>
           <Button
@@ -56,6 +64,88 @@ export function ActivityPanel({
           </Button>
         </div>
       </div>
+      {previewed && restorePlan && (
+        <section
+          aria-label={`Restore preview for saved version ${previewed.toTemplateVersion}`}
+          aria-live="polite"
+          className="rounded-xl border border-primary bg-selection-fill p-3"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <strong className="block text-sm">
+                Previewing Saved Version {previewed.toTemplateVersion}
+              </strong>
+              <p className="mt-1 text-xs leading-normal text-ink-muted">
+                The canvas is read-only until you cancel or restore.
+              </p>
+            </div>
+            <Button
+              className="shrink-0 px-2 py-1.5"
+              aria-label="Cancel saved version preview"
+              onClick={() => actions.previewCheckpoint(null)}
+            >
+              <X size={14} aria-hidden="true" />
+            </Button>
+          </div>
+          {!restorePlan.ok ? (
+            <p role="alert" className="mt-3 text-xs text-danger">
+              {restorePlan.detail}
+            </p>
+          ) : restorePlan.changes.length === 0 ? (
+            <p className="mt-3 rounded-md bg-raised p-2 text-xs text-ink-secondary">
+              Nothing to restore—current values already match this saved
+              version.
+            </p>
+          ) : (
+            <>
+              <p className="mt-3 text-xs text-ink-secondary">
+                {restorePlan.changes.length} exact layer change
+                {restorePlan.changes.length === 1 ? "" : "s"} across{" "}
+                {
+                  new Set(restorePlan.changes.map((change) => change.elementId))
+                    .size
+                }{" "}
+                element
+                {new Set(restorePlan.changes.map((change) => change.elementId))
+                  .size === 1
+                  ? ""
+                  : "s"}
+                .
+              </p>
+              <ul className="mt-2 max-h-32 list-none space-y-1 overflow-auto p-0 text-[11px] text-ink-muted">
+                {restorePlan.changes.map((change) => (
+                  <li
+                    className="break-words"
+                    key={`${change.elementId}-${change.viewportScope}-${change.afterLayer.kind}`}
+                  >
+                    <strong className="text-ink-secondary">
+                      {state.template.elements[change.elementId]?.label ??
+                        change.elementId}
+                    </strong>{" "}
+                    ·{" "}
+                    {change.afterLayer.kind === "structure"
+                      ? "Structure"
+                      : change.viewportScope === "all"
+                        ? "All views"
+                        : change.viewportScope}{" "}
+                    · {change.fields.join(", ")}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                tone="primary"
+                className="mt-3 w-full rounded-lg"
+                onClick={() =>
+                  actions.restoreCheckpoint(previewed.checkpointId)
+                }
+              >
+                <RotateCcw size={14} aria-hidden="true" />
+                Restore as New Saved Version
+              </Button>
+            </>
+          )}
+        </section>
+      )}
       <ol className="m-0 flex list-none flex-col gap-2 p-0">
         {checkpoints.map((checkpoint) => (
           <li
@@ -70,7 +160,9 @@ export function ActivityPanel({
                 <small className="mt-1 block text-[11px] text-ink-muted tabular-nums">
                   {checkpoint.reason === "manual"
                     ? "Saved manually"
-                    : "Saved when session ended"}{" "}
+                    : checkpoint.reason === "global-restore"
+                      ? "Restored from a saved version"
+                      : "Saved when session ended"}{" "}
                   · {timeFormat.format(checkpoint.savedAt)}
                 </small>
               </div>
@@ -79,6 +171,21 @@ export function ActivityPanel({
                 {checkpoint.commandCount === 1 ? "" : "s"}
               </span>
             </div>
+            <Button
+              className="mt-3 w-full"
+              disabled={!checkpoint.templateSnapshot}
+              onClick={() => actions.previewCheckpoint(checkpoint.checkpointId)}
+              title={
+                checkpoint.templateSnapshot
+                  ? undefined
+                  : "Legacy saves can only be reviewed through element history."
+              }
+            >
+              <Eye size={14} aria-hidden="true" />
+              {checkpoint.templateSnapshot
+                ? "Preview Restore"
+                : "Legacy Save · History Only"}
+            </Button>
             <ul className="mt-3 flex list-none flex-col gap-2 p-0">
               {checkpoint.entries.map((entry) => {
                 const element = state.template.elements[entry.elementId];

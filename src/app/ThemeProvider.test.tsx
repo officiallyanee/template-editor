@@ -8,38 +8,22 @@ beforeEach(() => {
   localStorage.clear();
   delete document.documentElement.dataset.theme;
   delete document.documentElement.dataset.style;
-  document.head.innerHTML = '<meta name="theme-color" content="#f6f5f4">';
+  document.head.innerHTML = '<meta name="theme-color" content="#ffffff">';
 });
 
-it("switches and persists interface styles without changing template state", async () => {
-  const user = userEvent.setup();
+it("uses Editorial as the only interface design", () => {
   render(
     <AppProviders>
       <App />
     </AppProviders>,
   );
 
-  const style = screen.getByLabelText("Interface Style");
-  expect(style).toHaveValue("scope");
-  expect(
-    screen.getAllByRole("option", { name: /Scope|Editorial/ }),
-  ).toHaveLength(2);
-
-  await user.selectOptions(style, "editorial");
-  expect(document.documentElement.dataset.style).toBe("editorial");
-  expect(localStorage.getItem("scope-ui-style")).toBe("editorial");
+  expect(screen.queryByLabelText("Interface Style")).not.toBeInTheDocument();
+  expect(document.documentElement).not.toHaveAttribute("data-style");
+  expect(localStorage.getItem("scope-ui-style")).toBeNull();
   expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute(
     "content",
     "#ffffff",
-  );
-  await user.click(
-    screen.getByRole("button", { name: "Switch to Dark Theme" }),
-  );
-  expect(document.documentElement.dataset.style).toBe("editorial");
-  expect(document.documentElement.dataset.theme).toBe("dark");
-  expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute(
-    "content",
-    "#111111",
   );
   expect(screen.getByText("Version saved · v1")).toBeInTheDocument();
 });
@@ -59,7 +43,7 @@ it("toggles and persists the editor theme without changing template state", asyn
   expect(localStorage.getItem("scope-ui-theme")).toBe("dark");
   expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute(
     "content",
-    "#17191c",
+    "#111111",
   );
   expect(screen.getByText("Version saved · v1")).toBeInTheDocument();
 });

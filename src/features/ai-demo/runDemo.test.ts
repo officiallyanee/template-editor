@@ -478,6 +478,62 @@ it("creates deterministic cross-axis position proposals only for selected childr
   ).toBeUndefined();
 });
 
+it.each([
+  ["Move this to the beginning", "reorder-first", { op: "reorder", order: -1 }],
+  ["Move this to first", "reorder-first", { op: "reorder", order: -1 }],
+  ["Move this to the end", "reorder-last", { op: "reorder", order: 5 }],
+  ["Move this to last", "reorder-last", { op: "reorder", order: 5 }],
+  [
+    "Align this right",
+    "cross-axis-position",
+    { op: "set", values: { alignSelf: "end" } },
+  ],
+  [
+    "Align this to the left",
+    "cross-axis-position",
+    { op: "set", values: { alignSelf: "start" } },
+  ],
+  [
+    "Position this at the end",
+    "cross-axis-position",
+    { op: "set", values: { alignSelf: "end" } },
+  ],
+])("keeps the prompt intent unambiguous: %s", (prompt, strategyId, patch) => {
+  const result = runDemo(prompt, ["headline"], "all", "desktop", freshState());
+  if (!result.ok) throw new Error(result.error.detail);
+  expect(result.strategyGroups[0].strategyId).toBe(strategyId);
+  expect(result.proposals[0].command.changes.headline).toEqual(patch);
+});
+
+it("only maps left/right alignment when the parent cross-axis is horizontal", () => {
+  const state = freshState();
+  const sharedRow = runDemo(
+    "Align this right",
+    ["service1"],
+    "all",
+    "desktop",
+    state,
+  );
+  if (!sharedRow.ok) throw new Error(sharedRow.error.detail);
+  expect(sharedRow.proposals).toHaveLength(0);
+  expect(sharedRow.strategyGroups[0].outcomes[0]).toMatchObject({
+    targetId: "service1",
+    status: "unsupported",
+    detail: expect.stringContaining("horizontal row"),
+  });
+
+  const mobileColumn = runDemo(
+    "Align this right",
+    ["service1"],
+    "mobile",
+    "mobile",
+    state,
+  );
+  if (!mobileColumn.ok) throw new Error(mobileColumn.error.detail);
+  expect(mobileColumn.proposals[0].after).toEqual({ alignSelf: "end" });
+  expect(mobileColumn.proposals[0].command.viewportScope).toBe("mobile");
+});
+
 it("creates a deterministic structural reorder proposal for one selected element", () => {
   const state = freshState();
   const first = runDemo(

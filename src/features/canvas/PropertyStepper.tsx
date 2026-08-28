@@ -23,7 +23,7 @@ export function PropertyStepper({
   onChange,
 }: PropertyStepperProps) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-border-default bg-raised p-3">
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-hairline bg-canvas-soft p-3">
       <div>
         <span className="block text-[11px] font-semibold tracking-[.04em] text-ink-muted uppercase">
           {label}

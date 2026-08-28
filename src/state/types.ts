@@ -27,7 +27,8 @@ export type ElementLayerSnapshot =
 export type RevisionIntent =
   | { kind: "manual" }
   | { kind: "ai-strategy"; strategyId: string }
-  | { kind: "restore"; restoredFromRevisionId: string };
+  | { kind: "restore"; restoredFromRevisionId: string }
+  | { kind: "global-restore"; restoredFromCheckpointId: string };
 
 export interface RevisionEntry {
   schemaVersion: 1;
@@ -77,7 +78,15 @@ export interface EditCommand {
     instruction?: string;
     strategyId?: string;
     restoredFromRevisionId?: string;
+    restoredFromCheckpointId?: string;
   };
+}
+
+export interface AtomicRestoreTransaction {
+  transactionId: string;
+  baseRevision: number;
+  restoredFromCheckpointId: string;
+  commands: EditCommand[];
 }
 
 export type PipelineErrorCode =

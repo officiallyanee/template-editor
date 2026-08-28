@@ -9,6 +9,7 @@ import { useEditor } from "../../state/StateContext";
 import { FullscreenCanvas } from "../canvas/Canvas";
 import { ViewportSwitcher } from "../viewport/ViewportSwitcher";
 import { choosePreviewSurround } from "./previewSurround";
+import { materializeSnapshot } from "../../state/globalRestore";
 
 function token(name: string, fallback: string): string {
   return (
@@ -23,12 +24,21 @@ export function FullscreenPreview() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const proposal = findProposal(state.strategyGroups, state.previewProposalId);
-  const page = state.template.elements[state.template.rootId];
+  const restoreCheckpoint = state.checkpoints.find(
+    (item) => item.checkpointId === state.restorePreviewCheckpointId,
+  );
+  const template = restoreCheckpoint?.templateSnapshot
+    ? materializeSnapshot(state.template, restoreCheckpoint.templateSnapshot)
+    : state.template;
+  const page = template.elements[template.rootId];
   const pageBackground =
-    resolvedWithProposal(page, state.viewport, proposal).backgroundColor ??
-    "#ffffff";
+    resolvedWithProposal(
+      page,
+      state.viewport,
+      restoreCheckpoint ? undefined : proposal,
+    ).backgroundColor ?? "#ffffff";
   const surround = choosePreviewSurround(pageBackground, {
-    light: token("--preview-surround-light", "#f4f2ed"),
+    light: token("--preview-surround-light", "#fafafa"),
     dark: token("--preview-surround-dark", "#27292c"),
   });
 
@@ -74,9 +84,11 @@ export function FullscreenPreview() {
               Full Screen Preview
             </h2>
             <p className="mt-0.5 truncate text-[11px] text-preview-chrome-muted">
-              {proposal
-                ? "Proposal Preview · Not Applied"
-                : "Saved Template Preview"}
+              {restoreCheckpoint
+                ? `Saved Version ${restoreCheckpoint.toTemplateVersion} · Not Applied`
+                : proposal
+                  ? "Proposal Preview · Not Applied"
+                  : "Saved Template Preview"}
             </p>
           </div>
           <ViewportSwitcher />
@@ -91,7 +103,7 @@ export function FullscreenPreview() {
         </header>
         <div className="min-h-0 flex-1 overflow-auto p-6 max-sm:p-3">
           <div
-            className={`mx-auto flex h-full min-h-full items-start justify-center ${surround.useBorder ? "ring-2 ring-white/70" : ""}`}
+            className={`mx-auto flex h-full min-h-full items-start justify-center ${surround.useBorder ? "ring-1 ring-preview-frame-border" : ""}`}
           >
             <FullscreenCanvas />
           </div>

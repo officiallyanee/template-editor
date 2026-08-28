@@ -1,8 +1,10 @@
 import type {
   ElementProperties,
   TemplateElement,
+  TemplateState,
   ViewportScope,
 } from "../../state/types";
+import { resolved } from "../../state/resolver";
 
 export interface StrategySpec {
   strategyId: string;
@@ -12,6 +14,7 @@ export interface StrategySpec {
     element: TemplateElement,
     current: ElementProperties,
   ) => Partial<ElementProperties> | null;
+  unsupportedReasonFor?: (element: TemplateElement) => string;
 }
 
 export function prominentStrategies(): StrategySpec[] {
@@ -216,6 +219,7 @@ function friendlyCopyFor(element: TemplateElement): string | null {
 export function documentedStrategies(
   instruction: string,
   scope: ViewportScope,
+  state: TemplateState,
 ): StrategySpec[] {
   const text = instruction.toLowerCase();
   if (/less.prominent|softer|lighter.weight|de.emphasize|quieter/.test(text))
@@ -265,18 +269,48 @@ export function documentedStrategies(
               : null,
       },
     ];
-  const position = text.match(
-    /\b(?:move|align|position)\b.*\b(start|center|end|stretch)\b/,
+  const logicalPosition = text.match(
+    /\b(?:align|position)\b.*\b(start|center|end|stretch)\b/,
   )?.[1] as NonNullable<ElementProperties["alignSelf"]> | undefined;
+  const physicalPosition = text.match(
+    /\b(?:align|position)\b.*\b(left|right)\b/,
+  )?.[1] as "left" | "right" | undefined;
+  const position =
+    logicalPosition ??
+    (physicalPosition === "left"
+      ? "start"
+      : physicalPosition === "right"
+        ? "end"
+        : undefined);
   if (position)
     return [
       {
         strategyId: "cross-axis-position",
-        label: "Position in Container",
+        label: physicalPosition
+          ? `Align ${physicalPosition === "left" ? "Left" : "Right"}`
+          : "Position in Container",
         rationale:
-          "Moves each supported selection on its parent container's cross axis without freeform coordinates.",
-        valuesFor: (element) =>
-          element.parentId === null ? null : { alignSelf: position },
+          physicalPosition != null
+            ? "Aligns each supported selection horizontally within a vertically stacked parent."
+            : "Moves each supported selection on its parent container's cross axis without freeform coordinates.",
+        valuesFor: (element) => {
+          if (element.parentId === null) return null;
+          if (physicalPosition) {
+            const parent = state.elements[element.parentId];
+            if (!parent) return null;
+            const parentProps =
+              scope === "all" ? parent.base : resolved(parent, scope);
+            if (parentProps.direction !== "column") return null;
+          }
+          return { alignSelf: position };
+        },
+        unsupportedReasonFor: (element) => {
+          if (element.parentId === null)
+            return `${element.label} has no parent container to align within.`;
+          if (physicalPosition)
+            return `${element.label} is inside a horizontal row. Left/right alignment requires a vertically stacked parent; use start/end for logical cross-axis placement.`;
+          return `${element.label} does not support this position strategy.`;
+        },
       },
     ];
   if (/blue|color/.test(text)) return [prominentStrategies()[1]];

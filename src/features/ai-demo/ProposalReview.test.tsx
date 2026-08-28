@@ -77,6 +77,37 @@ it("makes proposal acceptance keyboard operable", async () => {
   expect(screen.getByText("accepted")).toBeInTheDocument();
 });
 
+it("offers distinct sibling-order and container-alignment prompt pairs", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+  await user.click(screen.getByRole("tab", { name: "AI" }));
+
+  expect(
+    screen.getByRole("button", { name: "Move this to the end" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Move this to the beginning" }),
+  ).toBeInTheDocument();
+  const alignRight = screen.getByRole("button", { name: "Align this right" });
+  expect(
+    screen.getByRole("button", { name: "Align this left" }),
+  ).toBeInTheDocument();
+
+  await user.click(alignRight);
+  expect(screen.getByRole("textbox", { name: "AI Instruction" })).toHaveValue(
+    "Align this right",
+  );
+  await user.click(screen.getByRole("button", { name: /Run AI Demo/i }));
+  expect(screen.getByText("Align Right")).toBeInTheDocument();
+  expect(
+    screen.getByText(/horizontally within a vertically stacked parent/i),
+  ).toBeInTheDocument();
+});
+
 it("previews a pending proposal without committing it", async () => {
   const user = userEvent.setup();
   render(

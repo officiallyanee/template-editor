@@ -14,6 +14,7 @@ const PROMPT_PAIRS: Array<{ action: string; negation: string }> = [
   { action: "Make selected items compact", negation: "" },
   { action: "Stack this on mobile", negation: "" },
   { action: "Move this to the end", negation: "Move this to the beginning" },
+  { action: "Align this right", negation: "Align this left" },
 ];
 
 export function AiDemoPanel() {

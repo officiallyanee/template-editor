@@ -125,7 +125,7 @@ export function runDemo(
             },
           },
         ]
-      : documentedStrategies(instruction, scope);
+      : documentedStrategies(instruction, scope, state);
   if (
     /mobile|stack|responsive/i.test(instruction.trim()) &&
     scope !== "mobile"
@@ -166,7 +166,8 @@ export function runDemo(
           status: failure ? "invalid" : "unsupported",
           detail: failure
             ? failure.detail
-            : `${element.label} does not support this strategy.`,
+            : (spec.unsupportedReasonFor?.(element) ??
+              `${element.label} does not support this strategy.`),
         });
         continue;
       }

@@ -4,6 +4,7 @@ import { useEditorUi } from "../../app/EditorUiContext";
 import { Button } from "../../components/Button";
 import { findProposal } from "../../state/proposalStore";
 import { orderWithProposal, resolvedWithProposal } from "../../state/resolver";
+import { materializeSnapshot } from "../../state/globalRestore";
 import { useEditor } from "../../state/StateContext";
 import type { TemplateElement } from "../../state/types";
 import { CanvasElement, PreviewElement } from "./CanvasElement";
@@ -15,19 +16,25 @@ function TemplateDocument({ mode }: { mode: CanvasMode }) {
   const { state, actions } = useEditor();
   const previewProposal = findProposal(
     state.strategyGroups,
-    state.previewProposalId,
+    state.restorePreviewCheckpointId ? null : state.previewProposalId,
   );
-  const page = state.template.elements[state.template.rootId];
+  const restoreCheckpoint = state.checkpoints.find(
+    (item) => item.checkpointId === state.restorePreviewCheckpointId,
+  );
+  const template = restoreCheckpoint?.templateSnapshot
+    ? materializeSnapshot(state.template, restoreCheckpoint.templateSnapshot)
+    : state.template;
+  const page = template.elements[template.rootId];
   const pageProps = resolvedWithProposal(page, state.viewport, previewProposal);
   const sortByPreviewOrder = (left: TemplateElement, right: TemplateElement) =>
     orderWithProposal(left, previewProposal) -
       orderWithProposal(right, previewProposal) ||
     left.id.localeCompare(right.id);
-  const top = Object.values(state.template.elements)
+  const top = Object.values(template.elements)
     .filter((item) => item.parentId === page.id)
     .sort(sortByPreviewOrder);
-  const services = state.template.elements.services;
-  const serviceItems = Object.values(state.template.elements)
+  const services = template.elements.services;
+  const serviceItems = Object.values(template.elements)
     .filter((item) => item.parentId === "services")
     .sort(sortByPreviewOrder);
   const serviceProps = resolvedWithProposal(
@@ -35,7 +42,7 @@ function TemplateDocument({ mode }: { mode: CanvasMode }) {
     state.viewport,
     previewProposal,
   );
-  const editable = mode === "editable";
+  const editable = mode === "editable" && !restoreCheckpoint;
   const presentationWidth =
     state.viewport === "desktop" ? "none" : widths[state.viewport];
   const select = (event: MouseEvent | KeyboardEvent, id: string) => {
@@ -98,6 +105,7 @@ function TemplateDocument({ mode }: { mode: CanvasMode }) {
               gap: serviceProps.gap,
               flexDirection: serviceProps.direction,
               alignSelf: serviceProps.alignSelf,
+              borderRadius: serviceProps.borderRadius,
             }}
             tabIndex={editable ? 0 : undefined}
             role={editable ? "option" : undefined}
@@ -135,6 +143,9 @@ export function Canvas() {
     state.strategyGroups,
     state.previewProposalId,
   );
+  const restorePreview = state.checkpoints.find(
+    (item) => item.checkpointId === state.restorePreviewCheckpointId,
+  );
   return (
     <main
       id="main-content"
@@ -142,7 +153,11 @@ export function Canvas() {
     >
       <div className="mx-auto mb-2.5 flex max-w-[920px] items-center justify-between gap-3 text-[11px] font-semibold tracking-[.06em] text-ink-muted uppercase">
         <span className="min-w-0 truncate">
-          {previewProposal ? "Proposal Preview · Not Applied" : "Live Preview"}
+          {restorePreview
+            ? `Saved Version ${restorePreview.toTemplateVersion} Preview · Not Applied`
+            : previewProposal
+              ? "Proposal Preview · Not Applied"
+              : "Live Preview"}
         </span>
         <span className="ml-auto shrink-0">
           {widths[state.viewport]} px · {state.viewport}
@@ -156,7 +171,7 @@ export function Canvas() {
           <span className="max-sm:sr-only">Full Screen Preview</span>
         </Button>
       </div>
-      <div className="flex min-h-[calc(100%-28px)] items-start justify-center">
+      <div className="flex min-h-[calc(100%-28px)] items-center justify-center py-2">
         <TemplateDocument mode="editable" />
       </div>
     </main>

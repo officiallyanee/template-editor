@@ -6,23 +6,20 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import {
-  interfaceThemeColor,
-  isInterfaceStyle,
-  type InterfaceStyle,
-  type Theme,
-} from "./interfaceStyles";
+
+type Theme = "light" | "dark";
 
 type ThemeContextValue = {
   theme: Theme;
-  style: InterfaceStyle;
   setTheme: (theme: Theme) => void;
-  setStyle: (style: InterfaceStyle) => void;
   toggleTheme: () => void;
 };
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 const THEME_STORAGE_KEY = "scope-ui-theme";
-const STYLE_STORAGE_KEY = "scope-ui-style";
+const THEME_COLORS: Record<Theme, string> = {
+  light: "#ffffff",
+  dark: "#111111",
+};
 
 function initialTheme(): Theme {
   const existing = document.documentElement.dataset.theme;
@@ -34,36 +31,25 @@ function initialTheme(): Theme {
     : "light";
 }
 
-function initialStyle(): InterfaceStyle {
-  const existing = document.documentElement.dataset.style;
-  if (isInterfaceStyle(existing)) return existing;
-  const saved = localStorage.getItem(STYLE_STORAGE_KEY);
-  return isInterfaceStyle(saved) ? saved : "scope";
-}
-
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(initialTheme);
-  const [style, setStyle] = useState<InterfaceStyle>(initialStyle);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    document.documentElement.dataset.style = style;
+    delete document.documentElement.dataset.style;
     document.documentElement.style.colorScheme = theme;
     localStorage.setItem(THEME_STORAGE_KEY, theme);
-    localStorage.setItem(STYLE_STORAGE_KEY, style);
     document
       .querySelector<HTMLMetaElement>('meta[name="theme-color"]')
-      ?.setAttribute("content", interfaceThemeColor(theme, style));
-  }, [style, theme]);
+      ?.setAttribute("content", THEME_COLORS[theme]);
+  }, [theme]);
   const value = useMemo(
     () => ({
       theme,
-      style,
       setTheme,
-      setStyle,
       toggleTheme: () =>
         setTheme((value) => (value === "light" ? "dark" : "light")),
     }),
-    [style, theme],
+    [theme],
   );
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

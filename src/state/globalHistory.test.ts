@@ -83,7 +83,7 @@ it("groups every edit since the previous save into one checkpoint", () => {
   const checkpoint = createGlobalCheckpoint(second.state, [], "manual", 1000);
   expect(checkpoint).toEqual(
     expect.objectContaining({
-      schemaVersion: 1,
+      schemaVersion: 2,
       savedAt: 1000,
       fromTemplateVersion: 1,
       toTemplateVersion: 3,
@@ -92,12 +92,34 @@ it("groups every edit since the previous save into one checkpoint", () => {
         expect.objectContaining({ elementId: "headline" }),
         expect.objectContaining({ elementId: "intro" }),
       ],
+      templateSnapshot: expect.objectContaining({
+        templateId: second.state.templateId,
+        rootId: second.state.rootId,
+      }),
     }),
   );
   expect(hasUnsavedVersion(second.state.version, [checkpoint!])).toBe(false);
   expect(createGlobalCheckpoint(second.state, [checkpoint!], "manual")).toBe(
     null,
   );
+});
+
+it("stores a JSON-safe full snapshot without recursive element histories", () => {
+  const state = freshState();
+  const changed = dispatchCommand(
+    state,
+    command(state, "headline", { fontSize: 60 }),
+  );
+  if (!changed.ok) throw new Error(changed.error.detail);
+
+  const checkpoint = createGlobalCheckpoint(changed.state, [], "manual", 1000)!;
+  const roundTrip = JSON.parse(JSON.stringify(checkpoint));
+
+  expect(roundTrip).toEqual(checkpoint);
+  expect(checkpoint.templateSnapshot?.elements.headline).not.toHaveProperty(
+    "history",
+  );
+  expect(checkpoint.templateSnapshot?.elements.headline.base.fontSize).toBe(60);
 });
 
 it("creates a later checkpoint only from edits after the previous save", () => {

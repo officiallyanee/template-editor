@@ -13,7 +13,7 @@ export function Button({
     default:
       "border-border-default bg-raised text-ink-secondary hover:border-ink-faint hover:bg-surface-hover",
     primary:
-      "rounded-full border-primary bg-primary px-4 py-2.5 text-white hover:border-primary-active hover:bg-primary-active",
+      "rounded-full border-primary bg-primary px-4 py-2.5 text-on-primary hover:border-primary-active hover:bg-primary-active",
     danger:
       "border-danger-border bg-danger-surface text-danger hover:border-danger",
     inverse:

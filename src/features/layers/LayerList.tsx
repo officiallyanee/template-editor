@@ -7,17 +7,36 @@ import {
 import { useEditorUi } from "../../app/EditorUiContext";
 import { Button } from "../../components/Button";
 import { useEditor } from "../../state/StateContext";
+import type { TemplateElement, TemplateState } from "../../state/types";
+import {
+  TEMPLATE_OPTIONS,
+  templateOption,
+} from "../../templates/templateCatalog";
+
+export function orderedLayerElements(template: TemplateState) {
+  const ordered: TemplateElement[] = [];
+  const visit = (parentId: string | null) => {
+    Object.values(template.elements)
+      .filter((element) => element.parentId === parentId)
+      .sort(
+        (left, right) =>
+          left.order - right.order || left.id.localeCompare(right.id),
+      )
+      .forEach((element) => {
+        ordered.push(element);
+        visit(element.id);
+      });
+  };
+  visit(null);
+  return ordered;
+}
+
 export function LayerList() {
   const { state, actions } = useEditor();
   const { state: uiState, actions: uiActions } = useEditorUi();
   const expanded = uiState.layers === "open";
-  const elements = Object.values(state.template.elements)
-    // Include all elements — root (Page) sorts to top, children sort by order
-    .sort((a, b) => {
-      if (a.id === state.template.rootId) return -1;
-      if (b.id === state.template.rootId) return 1;
-      return a.order - b.order;
-    });
+  const activeTemplate = templateOption(state.template.templateId);
+  const elements = orderedLayerElements(state.template);
   return (
     <aside
       id="layer-rail"
@@ -29,9 +48,29 @@ export function LayerList() {
       >
         {expanded && (
           <div id="layer-list-heading" className="min-w-0">
-            <div className="mb-1.5 truncate text-[11px] leading-tight font-bold tracking-[.09em] text-primary uppercase">
-              Example Studio
-            </div>
+            <label className="mb-2 block">
+              <span className="sr-only">Template</span>
+              <select
+                aria-label="Template"
+                name="template"
+                className="w-full min-w-0 rounded-lg border border-hairline bg-raised py-1.5 pr-7 pl-2 text-[11px] font-bold tracking-[.06em] text-primary uppercase"
+                value={state.template.templateId}
+                onChange={(event) => {
+                  const nextId = event.target.value;
+                  if (nextId === state.template.templateId) return;
+                  actions.switchTemplate(nextId);
+                }}
+              >
+                {TEMPLATE_OPTIONS.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <span className="mt-1 block truncate text-[10px] font-medium tracking-normal text-ink-muted normal-case">
+                {activeTemplate?.description ?? "Template document"}
+              </span>
+            </label>
             <h2 className="mb-1.5 text-xl font-bold tracking-[-.2px] text-balance">
               Page Layers
             </h2>

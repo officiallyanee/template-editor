@@ -35,6 +35,66 @@ it("closes and persists Page Layers without changing the template version", asyn
   expect(toggle).toHaveFocus();
 });
 
+it("switches to the feature-focused template without creating an edit revision", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+
+  await user.selectOptions(
+    screen.getByRole("combobox", { name: "Template" }),
+    "launch-dashboard",
+  );
+
+  expect(screen.getByText("Responsive status layout")).toBeInTheDocument();
+  expect(screen.getByTestId("element-headline")).toHaveTextContent(
+    "Launch work, without losing the thread.",
+  );
+  expect(screen.getByText("Version saved · v1")).toBeInTheDocument();
+  expect(
+    localStorage.getItem("scoped-template-editor:v2:launch-dashboard"),
+  ).toContain('"templateId":"launch-dashboard"');
+});
+
+it("restores each template's edits when switching between documents", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+  await user.click(screen.getByRole("button", { name: "Increase text size" }));
+  const template = screen.getByRole("combobox", { name: "Template" });
+  expect(screen.getByTestId("element-headline")).toHaveStyle({
+    fontSize: "56px",
+  });
+
+  await user.selectOptions(template, "launch-dashboard");
+  expect(screen.getByTestId("element-headline")).toHaveStyle({
+    fontSize: "48px",
+  });
+  await user.click(screen.getByRole("button", { name: "Increase text size" }));
+  expect(screen.getByTestId("element-headline")).toHaveStyle({
+    fontSize: "50px",
+  });
+
+  await user.selectOptions(template, "example-studio");
+
+  expect(screen.getByTestId("element-headline")).toHaveStyle({
+    fontSize: "56px",
+  });
+  expect(screen.getByText("Autosaved · v2")).toBeInTheDocument();
+
+  await user.selectOptions(template, "launch-dashboard");
+
+  expect(screen.getByTestId("element-headline")).toHaveStyle({
+    fontSize: "50px",
+  });
+  expect(screen.getByText("Autosaved · v2")).toBeInTheDocument();
+});
+
 it("groups edits into a saved global version and routes to scoped recovery", async () => {
   const user = userEvent.setup();
   render(
@@ -55,6 +115,19 @@ it("groups edits into a saved global version and routes to scoped recovery", asy
   ).toBeInTheDocument();
   expect(screen.getByText("Saved Version 2")).toBeInTheDocument();
   expect(screen.getByText("Version saved · v2")).toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "Preview Restore" }));
+  expect(
+    screen.getByText(
+      "Nothing to restore—current values already match this saved version.",
+    ),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "Restore as New Saved Version" }),
+  ).toBeNull();
+  expect(screen.getByText("Version saved · v2")).toBeInTheDocument();
+  await user.click(
+    screen.getByRole("button", { name: "Cancel saved version preview" }),
+  );
   await user.click(screen.getByRole("button", { name: "Review History" }));
 
   expect(screen.getByRole("tab", { name: "History" })).toHaveAttribute(
@@ -62,6 +135,59 @@ it("groups edits into a saved global version and routes to scoped recovery", asy
     "true",
   );
   expect(screen.getByText(/recoverable revision/i)).toBeInTheDocument();
+});
+
+it("previews and atomically restores a saved document as a new saved version", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+  const heading = screen.getByTestId("element-headline");
+  await user.click(screen.getByRole("button", { name: "Increase text size" }));
+  expect(screen.getByTestId("element-headline")).toHaveStyle({
+    fontSize: "56px",
+  });
+  await user.click(screen.getByRole("tab", { name: "Saves" }));
+  await user.click(
+    screen.getByRole("button", { name: "Save Current Version" }),
+  );
+  await user.click(screen.getByRole("tab", { name: "Edit" }));
+  await user.click(screen.getByRole("button", { name: "Increase text size" }));
+  expect(heading).toHaveStyle({ fontSize: "58px" });
+  await user.click(screen.getByRole("tab", { name: "Saves" }));
+
+  await user.click(screen.getByRole("button", { name: "Preview Restore" }));
+  expect(
+    screen.getByRole("region", { name: "Restore preview for saved version 2" }),
+  ).toBeInTheDocument();
+  expect(screen.getByText(/canvas is read-only/i)).toBeInTheDocument();
+  expect(screen.getByTestId("element-headline")).toHaveStyle({
+    fontSize: "56px",
+  });
+  expect(screen.getByText("Autosaved · v3")).toBeInTheDocument();
+  expect(screen.getByTestId("element-headline")).not.toHaveAttribute(
+    "role",
+    "option",
+  );
+
+  await user.click(
+    screen.getByRole("button", { name: "Restore as New Saved Version" }),
+  );
+  expect(screen.getByTestId("element-headline")).toHaveStyle({
+    fontSize: "56px",
+  });
+  expect(screen.getByText("Version saved · v4")).toBeInTheDocument();
+  expect(screen.getByText("Saved Version 4")).toBeInTheDocument();
+  expect(
+    screen.getByText("Restored from a saved version", { exact: false }),
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole("region", {
+      name: "Restore preview for saved version 2",
+    }),
+  ).toBeNull();
 });
 
 it("opens a read-only full-screen preview and restores focus on exit", async () => {
@@ -114,7 +240,8 @@ it("writes one session checkpoint when the page closes with unsaved edits", asyn
   window.dispatchEvent(new Event("pagehide"));
 
   const saved = JSON.parse(
-    localStorage.getItem("scoped-template-checkpoints:v1") ?? "[]",
+    localStorage.getItem("scoped-template-checkpoints:v2:example-studio") ??
+      "[]",
   );
   expect(saved).toHaveLength(1);
   expect(saved[0]).toEqual(

@@ -7,7 +7,6 @@ import { FullscreenPreview } from "../features/preview/FullscreenPreview";
 import { useEditor } from "../state/StateContext";
 import type { ViewportScope } from "../state/types";
 import { RightPanel } from "./RightPanel";
-import { StyleSwitcher } from "./StyleSwitcher";
 import { useTheme } from "./ThemeProvider";
 import { useEditorUi } from "./EditorUiContext";
 export function App() {
@@ -34,8 +33,7 @@ export function App() {
           </div>
         </div>
         <ViewportSwitcher />
-        <div className="flex min-w-0 items-center gap-3 max-sm:grid max-sm:w-full max-sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto] max-sm:gap-2">
-          <StyleSwitcher />
+        <div className="flex min-w-0 items-center gap-3 max-sm:grid max-sm:w-full max-sm:grid-cols-[minmax(0,1fr)_auto_auto] max-sm:gap-2">
           <label className="flex min-w-0 items-center gap-2">
             <span className="text-[11px] font-semibold tracking-[.06em] text-ink-muted uppercase max-sm:sr-only">
               Edit Scope

@@ -1,8 +1,12 @@
 import { revisionFields } from "./historyStore";
 import type {
+  AtomicRestoreTransaction,
   EditSource,
   ElementId,
+  ElementLayerSnapshot,
+  ElementProperties,
   TemplateElement,
+  Viewport,
   ViewportScope,
   TemplateState,
 } from "./types";
@@ -18,7 +22,7 @@ export interface GlobalCommitSummary {
   templateVersion: number;
   committedAt: number;
   source: EditSource;
-  viewportScope: ViewportScope;
+  viewportScopes: ViewportScope[];
   entries: GlobalCommitEntry[];
 }
 
@@ -29,14 +33,48 @@ export interface GlobalCheckpointEntry {
 }
 
 export interface GlobalCheckpoint {
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
   checkpointId: string;
   savedAt: number;
-  reason: "manual" | "session-end";
+  reason: "manual" | "session-end" | "global-restore";
   fromTemplateVersion: number;
   toTemplateVersion: number;
   commandCount: number;
   entries: GlobalCheckpointEntry[];
+  templateSnapshot?: GlobalTemplateSnapshot;
+  restoredFromCheckpointId?: string;
+}
+
+export interface SavedElementSnapshot {
+  id: ElementId;
+  type: TemplateElement["type"];
+  label: string;
+  parentId: ElementId | null;
+  order: number;
+  base: ElementProperties;
+  overrides: Partial<Record<Viewport, Partial<ElementProperties>>>;
+}
+
+export interface GlobalTemplateSnapshot {
+  templateId: string;
+  rootId: ElementId;
+  elements: Record<ElementId, SavedElementSnapshot>;
+}
+
+export type GlobalRestorePlan =
+  | {
+      ok: true;
+      transaction: AtomicRestoreTransaction;
+      changes: GlobalRestoreChange[];
+    }
+  | { ok: false; detail: string };
+
+export interface GlobalRestoreChange {
+  elementId: ElementId;
+  viewportScope: ViewportScope;
+  beforeLayer: ElementLayerSnapshot;
+  afterLayer: ElementLayerSnapshot;
+  fields: string[];
 }
 
 export function buildGlobalTimeline(
@@ -52,10 +90,9 @@ export function buildGlobalTimeline(
         fields: revisionFields(revision),
       };
       if (existing) {
-        if (
-          !existing.entries.some((item) => item.elementId === entry.elementId)
-        )
-          existing.entries.push(entry);
+        existing.entries.push(entry);
+        if (!existing.viewportScopes.includes(revision.viewportScope))
+          existing.viewportScopes.push(revision.viewportScope);
         continue;
       }
       commits.set(revision.commandId, {
@@ -63,7 +100,7 @@ export function buildGlobalTimeline(
         templateVersion: revision.templateVersion,
         committedAt: revision.committedAt,
         source: revision.source,
-        viewportScope: revision.viewportScope,
+        viewportScopes: [revision.viewportScope],
         entries: [entry],
       });
     }
@@ -74,6 +111,7 @@ export function buildGlobalTimeline(
       entries: [...commit.entries].sort((left, right) =>
         left.elementId.localeCompare(right.elementId),
       ),
+      viewportScopes: [...commit.viewportScopes].sort(),
     }))
     .sort(
       (left, right) =>
@@ -103,6 +141,7 @@ export function createGlobalCheckpoint(
   checkpoints: GlobalCheckpoint[],
   reason: GlobalCheckpoint["reason"],
   savedAt = Date.now(),
+  restoredFromCheckpointId?: string,
 ): GlobalCheckpoint | null {
   const fromTemplateVersion = latestCheckpointVersion(checkpoints);
   if (template.version <= fromTemplateVersion) return null;
@@ -132,7 +171,7 @@ export function createGlobalCheckpoint(
   }
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     checkpointId: `checkpoint-${template.version}-${savedAt}`,
     savedAt,
     reason,
@@ -141,6 +180,36 @@ export function createGlobalCheckpoint(
     commandCount: commits.length,
     entries: [...byElement.values()].sort((left, right) =>
       left.elementId.localeCompare(right.elementId),
+    ),
+    templateSnapshot: snapshotTemplate(template),
+    restoredFromCheckpointId,
+  };
+}
+
+export function snapshotTemplate(
+  template: TemplateState,
+): GlobalTemplateSnapshot {
+  return {
+    templateId: template.templateId,
+    rootId: template.rootId,
+    elements: Object.fromEntries(
+      Object.entries(template.elements).map(([id, element]) => [
+        id,
+        {
+          id: element.id,
+          type: element.type,
+          label: element.label,
+          parentId: element.parentId,
+          order: element.order,
+          base: { ...element.base },
+          overrides: Object.fromEntries(
+            Object.entries(element.overrides).map(([scope, values]) => [
+              scope,
+              { ...values },
+            ]),
+          ),
+        },
+      ]),
     ),
   };
 }

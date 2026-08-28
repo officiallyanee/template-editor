@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f6f5f4" />
+    <meta name="theme-color" content="#ffffff" />
     <script>
       (() => {
         const saved = localStorage.getItem("scope-ui-theme");
@@ -13,11 +13,8 @@
             : matchMedia("(prefers-color-scheme: dark)").matches
               ? "dark"
               : "light";
-        const savedStyle = localStorage.getItem("scope-ui-style");
-        const style = savedStyle === "editorial" ? "editorial" : "scope";
         const savedLayers = localStorage.getItem("scope-layers-panel");
         document.documentElement.dataset.theme = theme;
-        document.documentElement.dataset.style = style;
         document.documentElement.dataset.layers =
           savedLayers === "closed" ? "closed" : "open";
         document.documentElement.style.colorScheme = theme;
