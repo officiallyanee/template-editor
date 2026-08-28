@@ -118,8 +118,7 @@ it("resolvedWithProposal: non-pending proposal returns base resolved", () => {
   const el = state.elements.headline;
   const accepted: PendingProposal = {
     id: "p1",
-    elementId: el.id,
-    strategyId: "s",
+    selectionSnapshot: [el.id],
     before: el.base,
     after: { fontSize: 60 },
     status: "accepted",
@@ -142,8 +141,7 @@ it("resolvedWithProposal: pending reorder proposal returns base resolved (order 
   const el = state.elements.headline;
   const reorderProposal: PendingProposal = {
     id: "p2",
-    elementId: el.id,
-    strategyId: "s",
+    selectionSnapshot: [el.id],
     before: el.base,
     after: {},
     status: "pending",
@@ -166,8 +164,7 @@ it("resolvedWithProposal: pending properties proposal returns simulated values",
   const el = state.elements.headline;
   const proposal: PendingProposal = {
     id: "p3",
-    elementId: el.id,
-    strategyId: "s",
+    selectionSnapshot: [el.id],
     before: el.base,
     after: { fontSize: 72 },
     status: "pending",
@@ -194,8 +191,7 @@ it("orderWithProposal: non-pending proposal returns element order", () => {
   const el = state.elements.headline;
   const accepted: PendingProposal = {
     id: "p4",
-    elementId: el.id,
-    strategyId: "s",
+    selectionSnapshot: [el.id],
     before: el.base,
     after: {},
     status: "accepted",
@@ -216,8 +212,7 @@ it("orderWithProposal: pending reorder proposal returns proposed order", () => {
   const el = state.elements.headline;
   const proposal: PendingProposal = {
     id: "p5",
-    elementId: el.id,
-    strategyId: "s",
+    selectionSnapshot: [el.id],
     before: el.base,
     after: {},
     status: "pending",

@@ -12,11 +12,11 @@ describe("proposalStore", () => {
       strategyId: "strat-1",
       label: "Strategy 1",
       rationale: "Rationale 1",
+      outcomes: [],
       proposals: [
         {
           id: "p1",
-          elementId: "headline",
-          strategyId: "strat-1",
+          selectionSnapshot: ["headline"],
           before: { fontSize: 54 },
           after: { fontSize: 64 },
           status: "pending",
@@ -31,8 +31,7 @@ describe("proposalStore", () => {
         },
         {
           id: "p2",
-          elementId: "cta",
-          strategyId: "strat-1",
+          selectionSnapshot: ["cta"],
           before: { width: 140 },
           after: { width: 180 },
           status: "pending",
@@ -76,6 +75,7 @@ describe("proposalStore", () => {
         strategyId: "strat-2",
         label: "Strategy 2",
         rationale: "Rationale 2",
+        outcomes: [],
         proposals: [
           {
             ...groups[0].proposals[0],

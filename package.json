@@ -8,6 +8,8 @@
     "build": "tsc -b && vite build",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:open": "vitest run --coverage && open coverage/index.html",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint . --max-warnings 0"
   },
@@ -26,6 +28,7 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@vitejs/plugin-react": "latest",
+    "@vitest/coverage-v8": "^4.1.11",
     "agent-react-devtools": "^0.4.0",
     "eslint": "latest",
     "eslint-plugin-react-hooks": "latest",
