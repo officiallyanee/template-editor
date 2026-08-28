@@ -1,5 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
-import { beforeEach, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, expect, it, vi } from "vitest";
 import { AppProviders } from "./AppProviders";
 import { App } from "./App";
 
@@ -98,4 +99,28 @@ it("uses quiet structural groups and clearer interactive controls in Edit", () =
     screen.getByRole("button", { name: "Increase text size" }),
   ])
     expect(button).toHaveClass("border-border-default", "bg-raised");
+});
+
+it("toggles theme and handles reset confirmation", async () => {
+  const user = userEvent.setup();
+  const confirmSpy = vi.spyOn(window, "confirm");
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+
+  const themeBtn = screen.getByRole("button", { name: /Switch to (Dark|Light) Theme/i });
+  await user.click(themeBtn);
+  expect(document.documentElement).toHaveAttribute("data-theme");
+
+  const resetBtn = screen.getByRole("button", { name: "Reset" });
+
+  confirmSpy.mockReturnValueOnce(false);
+  await user.click(resetBtn);
+
+  confirmSpy.mockReturnValueOnce(true);
+  await user.click(resetBtn);
+  expect(confirmSpy).toHaveBeenCalledTimes(2);
+  confirmSpy.mockRestore();
 });

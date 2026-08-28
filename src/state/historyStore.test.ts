@@ -218,3 +218,42 @@ it("applies a multi-element canvas command atomically", () => {
   );
   expect(new Set(ids)).toEqual(new Set(["multi-canvas"]));
 });
+
+it("restoreWouldChange: returns true when a reorder entry differs from current order", () => {
+  const state = freshState();
+  const result = dispatchCommand(state, {
+    commandId: "reorder-1",
+    source: "canvas",
+    targetIds: ["headline"],
+    viewportScope: "all",
+    baseRevision: state.version,
+    changes: { headline: { op: "reorder", order: 9 } },
+  });
+  if (!result.ok) throw new Error();
+  const entry = result.state.elements.headline.history.at(-1)!;
+  const reorderBack = dispatchCommand(result.state, {
+    commandId: "reorder-2",
+    source: "canvas",
+    targetIds: ["headline"],
+    viewportScope: "all",
+    baseRevision: result.state.version,
+    changes: { headline: { op: "reorder", order: 3 } },
+  });
+  if (!reorderBack.ok) throw new Error();
+  expect(restoreWouldChange(reorderBack.state.elements.headline, entry)).toBe(true);
+});
+
+it("restoreWouldChange: returns false when reorder entry matches current order", () => {
+  const state = freshState();
+  const result = dispatchCommand(state, {
+    commandId: "reorder-3",
+    source: "canvas",
+    targetIds: ["headline"],
+    viewportScope: "all",
+    baseRevision: state.version,
+    changes: { headline: { op: "reorder", order: 9 } },
+  });
+  if (!result.ok) throw new Error();
+  const entry = result.state.elements.headline.history.at(-1)!;
+  expect(restoreWouldChange(result.state.elements.headline, entry)).toBe(false);
+});

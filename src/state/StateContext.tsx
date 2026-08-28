@@ -48,7 +48,6 @@ interface EditorState {
   strategyGroups: StrategyGroup[];
   activeStrategyId: string | null;
   previewProposalId: string | null;
-  /** Viewport to restore when a viewport-scoped proposal preview is stopped. */
   previewReturnViewport: Viewport | null;
   restorePreviewCheckpointId: string | null;
   lastError: string | null;
@@ -61,9 +60,7 @@ interface EditorActions {
   setStrategyGroups: (items: StrategyGroup[]) => void;
   setActiveStrategy: (id: string) => void;
   setPreviewProposal: (id: string | null) => void;
-  /** Atomically start a proposal preview, switching viewport if scope requires it. */
   startPreviewProposal: (id: string, scope: ViewportScope) => void;
-  /** Atomically stop a proposal preview, restoring the prior viewport if it was switched. */
   stopPreviewProposal: (id: string, scope: ViewportScope) => void;
   updateProposal: (id: string, patch: Partial<PendingProposal>) => void;
   settleAcceptedProposal: (
@@ -203,7 +200,6 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         setState((s) => ({
           ...s,
           previewProposalId: id,
-          // If proposal targets a specific viewport, switch to it and remember where to return
           viewport: scope !== "all" ? (scope as Viewport) : s.viewport,
           previewReturnViewport: scope !== "all" ? s.viewport : null,
         })),
@@ -211,7 +207,6 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         setState((s) => ({
           ...s,
           previewProposalId: null,
-          // Restore the viewport we switched away from (if any)
           viewport:
             scope !== "all" && s.previewReturnViewport != null
               ? s.previewReturnViewport

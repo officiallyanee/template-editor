@@ -248,3 +248,25 @@ it("writes one session checkpoint when the page closes with unsaved edits", asyn
     expect.objectContaining({ reason: "session-end", toTemplateVersion: 2 }),
   );
 });
+
+it("handles restoring global checkpoint when current values already match or invalid", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+
+  await user.click(screen.getByRole("button", { name: "Increase text size" }));
+  await user.click(screen.getByRole("tab", { name: "Saves" }));
+  await user.click(
+    screen.getByRole("button", { name: "Save Current Version" }),
+  );
+
+  await user.click(screen.getByRole("button", { name: "Preview Restore" }));
+  expect(
+    screen.getByText(
+      /Nothing to restore—current values already match this saved version/i,
+    ),
+  ).toBeInTheDocument();
+});

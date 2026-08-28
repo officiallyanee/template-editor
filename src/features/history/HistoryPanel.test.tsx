@@ -44,3 +44,49 @@ it("allows restoring back to initial baseline after a single edit", async () => 
 
   expect(screen.getByText("Restored revision")).toBeInTheDocument();
 });
+
+it("shows empty state when an element has no edits yet", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+
+  await user.click(screen.getByRole("tab", { name: "History" }));
+  expect(screen.getByText("No edits yet")).toBeInTheDocument();
+});
+
+it("shows placeholder when no element is selected in history tab", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+
+  const headline = screen.getByTestId("element-headline");
+  headline.focus();
+  await user.keyboard("{Shift>}{Enter}{/Shift}");
+
+  await user.click(screen.getByRole("tab", { name: "History" }));
+  expect(
+    screen.getByText("Select one element to review its history."),
+  ).toBeInTheDocument();
+});
+
+it("shows multi-selection indicator in history tab", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+
+  const intro = screen.getByTestId("element-intro");
+  intro.focus();
+  await user.keyboard("{Shift>}{Enter}{/Shift}");
+
+  await user.click(screen.getByRole("tab", { name: "History" }));
+  expect(screen.getByText(/active of 2 selected/i)).toBeInTheDocument();
+});
