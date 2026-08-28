@@ -7,14 +7,16 @@ export function validateFields(
   for (const id of command.targetIds) {
     const patch = command.changes[id];
     if (patch.op === "reorder") {
-      if (!Number.isInteger(patch.order) || patch.order < 0)
+      if (!Number.isFinite(patch.order))
         return {
           code: "INVALID_FIELD",
-          detail: "Order must be a positive whole number.",
+          detail: "Order must be a finite number.",
         };
       continue;
     }
-    const result = elementSchemas[state.elements[id].type].safeParse(patch.values);
+    const result = elementSchemas[state.elements[id].type].safeParse(
+      patch.values,
+    );
     if (!result.success)
       return {
         code: "INVALID_FIELD",

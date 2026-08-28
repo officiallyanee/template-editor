@@ -8,12 +8,10 @@ it("starts with an accessible two-blue hierarchy on the pink Page", () => {
   const headline = starterTemplate.elements.headline.base.color;
 
   expect(background).toBe("#ffe5e5");
+  expect(starterTemplate.templateId).toBe("example-studio");
+  expect(starterTemplate.elements.eyebrow.base.text).toBe("EXAMPLE STUDIO");
   expect(eyebrow).toBe("#0067b9");
   expect(headline).toBe("#005bab");
-  expect(
-    meetsContrast(contrastRatio(eyebrow!, background!), 4.5),
-  ).toBe(true);
-  expect(
-    meetsContrast(contrastRatio(headline!, background!), 3),
-  ).toBe(true);
+  expect(meetsContrast(contrastRatio(eyebrow!, background!), 4.5)).toBe(true);
+  expect(meetsContrast(contrastRatio(headline!, background!), 3)).toBe(true);
 });

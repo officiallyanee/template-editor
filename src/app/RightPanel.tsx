@@ -1,14 +1,16 @@
-import { Braces, History, MousePointer2, Sparkles } from "lucide-react";
+import { Braces, Clock3, History, MousePointer2, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { InspectorPanel } from "../features/canvas/InspectorPanel";
 import { CodeEditorPanel } from "../features/code-editor/CodeEditorPanel";
 import { AiDemoPanel } from "../features/ai-demo/AiDemoPanel";
 import { HistoryPanel } from "../features/history/HistoryPanel";
+import { ActivityPanel } from "../features/history/ActivityPanel";
 const tabs = [
   { id: "edit", label: "Edit", icon: MousePointer2 },
   { id: "code", label: "Code", icon: Braces },
   { id: "ai", label: "AI", icon: Sparkles },
   { id: "history", label: "History", icon: History },
+  { id: "activity", label: "Saves", icon: Clock3 },
 ] as const;
 export function RightPanel() {
   const [tab, setTab] = useState<(typeof tabs)[number]["id"]>("edit");
@@ -18,7 +20,7 @@ export function RightPanel() {
       aria-label="Editing tools"
     >
       <div
-        className="grid grid-cols-4 border-b border-border-default"
+        className="grid grid-cols-5 border-b border-border-default"
         role="tablist"
         aria-label="Editing tools"
       >
@@ -47,6 +49,9 @@ export function RightPanel() {
         {tab === "code" && <CodeEditorPanel />}
         {tab === "ai" && <AiDemoPanel />}
         {tab === "history" && <HistoryPanel />}
+        {tab === "activity" && (
+          <ActivityPanel onOpenHistory={() => setTab("history")} />
+        )}
       </div>
     </aside>
   );

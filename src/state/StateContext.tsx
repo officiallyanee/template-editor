@@ -9,10 +9,17 @@ import {
   type ReactNode,
 } from "react";
 import {
+  loadGlobalCheckpoints,
   loadTemplate,
   resetTemplate,
+  saveGlobalCheckpoints,
   saveTemplate,
 } from "../persistence/localStorage";
+import {
+  createGlobalCheckpoint,
+  hasUnsavedVersion,
+  type GlobalCheckpoint,
+} from "./globalHistory";
 import { dispatchCommand } from "./pipeline";
 import { settleAcceptedGroups } from "./proposalStore";
 import type {
@@ -29,6 +36,8 @@ import type {
 
 interface EditorState {
   template: TemplateState;
+  checkpoints: GlobalCheckpoint[];
+  hasUnsavedVersion: boolean;
   viewport: Viewport;
   editScope: ViewportScope;
   selectedIds: ElementId[];
@@ -58,6 +67,7 @@ interface EditorActions {
     templateVersion: number,
     targetIds: ElementId[],
   ) => void;
+  saveVersion: () => void;
   reset: () => void;
 }
 interface EditorContextValue {
@@ -67,18 +77,24 @@ interface EditorContextValue {
 const EditorContext = createContext<EditorContextValue | null>(null);
 
 export function EditorProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<EditorState>(() => ({
-    template: loadTemplate(),
-    viewport: "desktop",
-    editScope: "all",
-    selectedIds: ["headline"],
-    activeId: "headline",
-    strategyGroups: [],
-    activeStrategyId: null,
-    previewProposalId: null,
-    previewReturnViewport: null,
-    lastError: null,
-  }));
+  const [state, setState] = useState<EditorState>(() => {
+    const template = loadTemplate();
+    const checkpoints = loadGlobalCheckpoints();
+    return {
+      template,
+      checkpoints,
+      hasUnsavedVersion: hasUnsavedVersion(template.version, checkpoints),
+      viewport: "desktop",
+      editScope: "all",
+      selectedIds: ["headline"],
+      activeId: "headline",
+      strategyGroups: [],
+      activeStrategyId: null,
+      previewProposalId: null,
+      previewReturnViewport: null,
+      lastError: null,
+    };
+  });
   const stateRef = useRef(state);
   useEffect(() => {
     stateRef.current = state;
@@ -86,6 +102,33 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     saveTemplate(state.template);
   }, [state.template]);
+  const checkpointPendingVersion = useCallback(
+    (reason: GlobalCheckpoint["reason"], publish: boolean) => {
+      const current = stateRef.current;
+      const checkpoint = createGlobalCheckpoint(
+        current.template,
+        current.checkpoints,
+        reason,
+      );
+      if (!checkpoint) return;
+      const checkpoints = [...current.checkpoints, checkpoint];
+      saveTemplate(current.template);
+      saveGlobalCheckpoints(checkpoints);
+      const next = {
+        ...current,
+        checkpoints,
+        hasUnsavedVersion: false,
+      };
+      stateRef.current = next;
+      if (publish) setState(next);
+    },
+    [],
+  );
+  useEffect(() => {
+    const saveOnPageHide = () => checkpointPendingVersion("session-end", false);
+    window.addEventListener("pagehide", saveOnPageHide);
+    return () => window.removeEventListener("pagehide", saveOnPageHide);
+  }, [checkpointPendingVersion]);
   const dispatch = useCallback(
     (command: EditCommand, context: ScopeContext = {}) => {
       const outcome = dispatchCommand(
@@ -95,7 +138,12 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       );
       setState((current) =>
         outcome.ok
-          ? { ...current, template: outcome.state, lastError: null }
+          ? {
+              ...current,
+              template: outcome.state,
+              hasUnsavedVersion: true,
+              lastError: null,
+            }
           : { ...current, lastError: outcome.error.detail },
       );
       return outcome;
@@ -121,9 +169,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
             ...s,
             selectedIds,
             activeId:
-              s.activeId === id
-                ? (selectedIds.at(-1) ?? null)
-                : s.activeId,
+              s.activeId === id ? (selectedIds.at(-1) ?? null) : s.activeId,
           };
         }),
       setStrategyGroups: (strategyGroups) =>
@@ -187,10 +233,13 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           previewProposalId: null,
           previewReturnViewport: null,
         })),
+      saveVersion: () => checkpointPendingVersion("manual", true),
       reset: () =>
         setState((s) => ({
           ...s,
           template: resetTemplate(),
+          checkpoints: [],
+          hasUnsavedVersion: false,
           selectedIds: ["headline"],
           activeId: "headline",
           strategyGroups: [],
@@ -200,7 +249,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           lastError: null,
         })),
     }),
-    [dispatch],
+    [checkpointPendingVersion, dispatch],
   );
   return <EditorContext value={{ state, actions }}>{children}</EditorContext>;
 }

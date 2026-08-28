@@ -9,13 +9,8 @@ import type {
   Viewport,
   ViewportScope,
 } from "../../state/types";
+import { deterministicId } from "../../utils/deterministicId";
 import { contrastRatio, meetsContrast, requiredTextContrast } from "./contrast";
-
-function deterministicId(prefix: string, seed: string): string {
-  let hash = 0;
-  for (const char of seed) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
-  return `${prefix}-${hash.toString(36)}`;
-}
 
 function contextualBackground(
   state: TemplateState,
@@ -26,7 +21,9 @@ function contextualBackground(
   if (values.backgroundColor) return values.backgroundColor;
   const current = resolved(element, viewport);
   if (current.backgroundColor) return current.backgroundColor;
-  const parent = element.parentId ? state.elements[element.parentId] : undefined;
+  const parent = element.parentId
+    ? state.elements[element.parentId]
+    : undefined;
   return parent
     ? (resolved(parent, viewport).backgroundColor ?? "#ffffff")
     : "#ffffff";
@@ -71,7 +68,13 @@ export function buildProposal(
     ),
   ) as Partial<ElementProperties>;
   if (!Object.keys(changedValues).length) return null;
-  const metrics = contrastMetrics(state, element, viewport, current, changedValues);
+  const metrics = contrastMetrics(
+    state,
+    element,
+    viewport,
+    current,
+    changedValues,
+  );
   // Block on contrast failure for AI-originated strategies only.
   // Explicit user color requests (strategyId "explicit-color-change") are intentional
   // choices by the user — display the contrast metrics as a warning but do not reject.

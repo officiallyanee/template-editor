@@ -443,10 +443,10 @@ it("spatial-scale produces proposals for container elements", () => {
   }
 });
 
-it("creates deterministic position proposals only for selected children", () => {
+it("creates deterministic cross-axis position proposals only for selected children", () => {
   const state = freshState();
   const result = runDemo(
-    "Move this to the end",
+    "Position this at the end",
     ["headline", "page"],
     "mobile",
     "mobile",
@@ -470,6 +470,82 @@ it("creates deterministic position proposals only for selected children", () => 
   });
   if (!accepted.ok) throw new Error(accepted.error.detail);
   expect(accepted.state.elements.headline.base.alignSelf).toBeUndefined();
-  expect(accepted.state.elements.headline.overrides.mobile?.alignSelf).toBe("end");
-  expect(accepted.state.elements.intro.overrides.mobile?.alignSelf).toBeUndefined();
+  expect(accepted.state.elements.headline.overrides.mobile?.alignSelf).toBe(
+    "end",
+  );
+  expect(
+    accepted.state.elements.intro.overrides.mobile?.alignSelf,
+  ).toBeUndefined();
+});
+
+it("creates a deterministic structural reorder proposal for one selected element", () => {
+  const state = freshState();
+  const first = runDemo(
+    "Move this to the end",
+    ["headline"],
+    "all",
+    "desktop",
+    state,
+  );
+  const second = runDemo(
+    "Move this to the end",
+    ["headline"],
+    "all",
+    "desktop",
+    state,
+  );
+  expect(first).toEqual(second);
+  if (!first.ok) throw new Error(first.error.detail);
+  expect(first.strategyGroups[0].strategyId).toBe("reorder-last");
+  expect(first.proposals[0].command.changes.headline).toEqual({
+    op: "reorder",
+    order: 5,
+  });
+  expect(first.proposals[0].before).toEqual({ order: 1 });
+  expect(first.proposals[0].after).toEqual({ order: 5 });
+
+  const accepted = dispatchCommand(state, first.proposals[0].command, {
+    selectedIds: ["headline"],
+    requestedScope: "all",
+  });
+  if (!accepted.ok) throw new Error(accepted.error.detail);
+  expect(accepted.state.elements.headline.history.at(-1)?.afterLayer).toEqual({
+    kind: "structure",
+    order: 5,
+  });
+});
+
+it("rejects ambiguous or viewport-scoped structural reorder requests", () => {
+  const state = freshState();
+  expect(
+    runDemo(
+      "Move this to the end",
+      ["headline", "intro"],
+      "all",
+      "desktop",
+      state,
+    ),
+  ).toMatchObject({ ok: false, error: { code: "OUT_OF_SCOPE" } });
+  expect(
+    runDemo("Move this to the end", ["headline"], "mobile", "mobile", state),
+  ).toMatchObject({
+    ok: false,
+    error: { detail: expect.stringContaining("All Views") },
+  });
+});
+
+it("reports a reorder boundary as a no-op", () => {
+  const result = runDemo(
+    "Move this to the end",
+    ["services"],
+    "all",
+    "desktop",
+    freshState(),
+  );
+  if (!result.ok) throw new Error(result.error.detail);
+  expect(result.proposals).toHaveLength(0);
+  expect(result.strategyGroups[0].outcomes[0]).toMatchObject({
+    targetId: "services",
+    status: "no-op",
+  });
 });

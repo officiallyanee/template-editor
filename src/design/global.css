@@ -26,6 +26,12 @@
   --color-danger-border: var(--danger-border);
   --color-warning-surface: var(--warning-surface);
   --color-warning-border: var(--warning-border);
+  --color-preview-chrome: var(--preview-chrome);
+  --color-preview-chrome-control: var(--preview-chrome-control);
+  --color-preview-chrome-hover: var(--preview-chrome-hover);
+  --color-preview-chrome-border: var(--preview-chrome-border);
+  --color-preview-chrome-text: var(--preview-chrome-text);
+  --color-preview-chrome-muted: var(--preview-chrome-muted);
   --shadow-flat: var(--shadow-flat);
   --shadow-soft: var(--shadow-soft);
 }

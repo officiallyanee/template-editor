@@ -201,7 +201,7 @@ export function shrinkStrategies(): StrategySpec[] {
 function friendlyCopyFor(element: TemplateElement): string | null {
   if (element.type === "container") return null;
   if (element.type === "button") return "Plan my next step";
-  if (element.id === "eyebrow") return "Brightpath Studio · Practical craft";
+  if (element.id === "eyebrow") return "Example Studio · Practical craft";
   if (element.id === "headline" || element.type === "heading")
     return "Clear ideas, thoughtfully brought to life.";
   if (element.id === "intro")
@@ -265,9 +265,9 @@ export function documentedStrategies(
               : null,
       },
     ];
-  const position = text.match(/\b(?:move|align|position)\b.*\b(start|center|end|stretch)\b/)?.[1] as
-    | NonNullable<ElementProperties["alignSelf"]>
-    | undefined;
+  const position = text.match(
+    /\b(?:move|align|position)\b.*\b(start|center|end|stretch)\b/,
+  )?.[1] as NonNullable<ElementProperties["alignSelf"]> | undefined;
   if (position)
     return [
       {

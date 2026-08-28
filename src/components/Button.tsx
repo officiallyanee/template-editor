@@ -1,6 +1,6 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
-type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
-  tone?: "default" | "primary" | "danger";
+import type { ComponentPropsWithRef, ReactNode } from "react";
+type Props = ComponentPropsWithRef<"button"> & {
+  tone?: "default" | "primary" | "danger" | "inverse";
   children: ReactNode;
 };
 export function Button({
@@ -11,11 +11,13 @@ export function Button({
 }: Props) {
   const tones = {
     default:
-      "border-hairline bg-raised text-ink-secondary hover:border-ink-faint hover:bg-surface-hover",
+      "border-border-default bg-raised text-ink-secondary hover:border-ink-faint hover:bg-surface-hover",
     primary:
       "rounded-full border-primary bg-primary px-4 py-2.5 text-white hover:border-primary-active hover:bg-primary-active",
     danger:
       "border-danger-border bg-danger-surface text-danger hover:border-danger",
+    inverse:
+      "border-preview-chrome-border bg-preview-chrome-control text-preview-chrome-text hover:bg-preview-chrome-hover",
   };
   return (
     <button

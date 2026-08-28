@@ -62,3 +62,12 @@ export function resolvedWithProposal(
   );
   return resolved(simulated, viewport);
 }
+
+export function orderWithProposal(
+  element: TemplateElement,
+  proposal?: PendingProposal,
+): number {
+  if (!proposal || proposal.status !== "pending") return element.order;
+  const patch = proposal.command.changes[element.id];
+  return patch?.op === "reorder" ? patch.order : element.order;
+}

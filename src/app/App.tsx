@@ -1,15 +1,18 @@
-import { Moon, RotateCcw, ShieldCheck, Sun } from "lucide-react";
+import { Moon, RotateCcw, Save, Sun } from "lucide-react";
 import { Button } from "../components/Button";
 import { Canvas } from "../features/canvas/Canvas";
 import { LayerList } from "../features/layers/LayerList";
 import { ViewportSwitcher } from "../features/viewport/ViewportSwitcher";
+import { FullscreenPreview } from "../features/preview/FullscreenPreview";
 import { useEditor } from "../state/StateContext";
 import type { ViewportScope } from "../state/types";
 import { RightPanel } from "./RightPanel";
 import { StyleSwitcher } from "./StyleSwitcher";
 import { useTheme } from "./ThemeProvider";
+import { useEditorUi } from "./EditorUiContext";
 export function App() {
   const { state, actions } = useEditor();
+  const { state: uiState } = useEditorUi();
   const { theme, toggleTheme } = useTheme();
   return (
     <div className="h-dvh min-w-0 overflow-hidden">
@@ -21,14 +24,11 @@ export function App() {
       </a>
       <header className="relative z-10 flex h-[68px] min-w-0 items-center justify-between gap-5 border-b border-hairline bg-canvas px-5 max-sm:h-28 max-sm:flex-wrap max-sm:content-center max-sm:gap-2 max-sm:px-3">
         <div className="flex shrink-0 items-center gap-2.5">
-          <div className="grid size-[34px] place-items-center rounded-lg bg-ink text-canvas">
-            <ShieldCheck size={19} aria-hidden="true" />
-          </div>
-          <div className="max-lg:hidden">
+          <div>
             <strong className="block text-[17px] tracking-[-0.25px]">
               Scope
             </strong>
-            <span className="block text-[11px] tracking-[.08em] text-ink-muted uppercase">
+            <span className="block text-[11px] tracking-[.08em] text-ink-muted uppercase max-lg:hidden">
               AI Template Editor
             </span>
           </div>
@@ -60,8 +60,17 @@ export function App() {
             aria-live="polite"
           >
             <span className="size-[7px] rounded-full bg-success" />
-            Saved · v{state.template.version}
+            {state.hasUnsavedVersion ? "Autosaved" : "Version saved"} · v
+            {state.template.version}
           </span>
+          <Button
+            className="max-lg:hidden"
+            disabled={!state.hasUnsavedVersion}
+            onClick={actions.saveVersion}
+          >
+            <Save size={15} aria-hidden="true" />
+            Save Version
+          </Button>
           <Button
             aria-label={`Switch to ${theme === "light" ? "Dark" : "Light"} Theme`}
             title={`Switch to ${theme === "light" ? "Dark" : "Light"} Theme`}
@@ -100,11 +109,14 @@ export function App() {
           {state.lastError}
         </div>
       )}
-      <div className="grid h-[calc(100dvh-68px)] min-h-0 min-w-0 grid-cols-[230px_minmax(480px,1fr)_350px] overflow-hidden max-xl:grid-cols-[190px_minmax(380px,1fr)_320px] max-lg:grid-cols-[minmax(0,1fr)_320px] max-sm:h-[calc(100dvh-112px)] max-sm:grid-cols-1 max-sm:grid-rows-[minmax(0,55fr)_minmax(0,45fr)]">
+      <div
+        className={`grid h-[calc(100dvh-68px)] min-h-0 min-w-0 overflow-hidden max-lg:grid-cols-[minmax(0,1fr)_320px] max-sm:h-[calc(100dvh-112px)] max-sm:grid-cols-1 max-sm:grid-rows-[minmax(0,55fr)_minmax(0,45fr)] ${uiState.layers === "open" ? "grid-cols-[230px_minmax(480px,1fr)_350px] max-xl:grid-cols-[190px_minmax(380px,1fr)_320px]" : "grid-cols-[64px_minmax(480px,1fr)_350px] max-xl:grid-cols-[64px_minmax(380px,1fr)_320px]"}`}
+      >
         <LayerList />
         <Canvas />
         <RightPanel />
       </div>
+      {uiState.canvasMode === "fullscreen-preview" && <FullscreenPreview />}
     </div>
   );
 }

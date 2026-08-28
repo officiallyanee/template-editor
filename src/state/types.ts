@@ -102,8 +102,8 @@ export interface PendingProposal {
   id: string;
   selectionSnapshot: ElementId[];
   command: EditCommand;
-  before: Partial<ElementProperties>;
-  after: Partial<ElementProperties>;
+  before: ProposalValueSnapshot;
+  after: ProposalValueSnapshot;
   status: "pending" | "accepted" | "rejected" | "invalid";
   error?: string;
   metrics?: {
@@ -112,6 +112,10 @@ export interface PendingProposal {
     requiredContrast: number;
   };
 }
+
+export type ProposalValueSnapshot = Partial<ElementProperties> & {
+  order?: number;
+};
 
 export interface ProposalOutcome {
   id: string;

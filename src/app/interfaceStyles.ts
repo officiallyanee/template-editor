@@ -4,12 +4,12 @@ export const INTERFACE_STYLES = [
   {
     id: "scope",
     label: "Scope",
-    themeColor: { light: "#f6f5f4", dark: "#121211" },
+    themeColor: { light: "#f6f5f4", dark: "#17191c" },
   },
   {
     id: "editorial",
     label: "Editorial",
-    themeColor: { light: "#ffffff", dark: "#000000" },
+    themeColor: { light: "#ffffff", dark: "#111111" },
   },
 ] as const;
 
@@ -21,10 +21,7 @@ export function isInterfaceStyle(
   return INTERFACE_STYLES.some((style) => style.id === value);
 }
 
-export function interfaceThemeColor(
-  theme: Theme,
-  style: InterfaceStyle,
-) {
+export function interfaceThemeColor(theme: Theme, style: InterfaceStyle) {
   return INTERFACE_STYLES.find((option) => option.id === style)!.themeColor[
     theme
   ];

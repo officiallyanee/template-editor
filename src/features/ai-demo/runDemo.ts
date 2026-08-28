@@ -10,6 +10,7 @@ import type {
 import { meetsContrast } from "./contrast";
 import { parseColorPrompt } from "./promptParser";
 import { buildProposal } from "./proposalBuilder";
+import { buildReorderProposal } from "./reorderProposalBuilder";
 import { explicitColorValues } from "./resolveColorChange";
 import { documentedStrategies, type StrategySpec } from "./strategies";
 
@@ -52,12 +53,54 @@ export function runDemo(
       },
     };
 
+  const reorderMatch = instruction
+    .trim()
+    .toLowerCase()
+    .match(/\bmove\b.*\b(beginning|first|start|end|last)\b/);
+  if (reorderMatch) {
+    const position = /beginning|first|start/.test(reorderMatch[1])
+      ? "first"
+      : "last";
+    const proposal = buildReorderProposal(
+      state,
+      selectedIds,
+      instruction,
+      position,
+      scope,
+      baseRevision,
+    );
+    if (proposal && !("id" in proposal))
+      return { ok: false, error: proposal.error };
+    const target = elements[0];
+    const strategyId = position === "first" ? "reorder-first" : "reorder-last";
+    const group: StrategyGroup = {
+      strategyId,
+      label: position === "first" ? "Move to Beginning" : "Move to End",
+      rationale:
+        "Changes only this element’s shared sibling order and keeps every property intact.",
+      metrics: { evaluated: 0, compliant: 0 },
+      proposals: proposal ? [proposal] : [],
+      outcomes: proposal
+        ? []
+        : [
+            {
+              id: `${strategyId}:${target.id}:no-op`,
+              targetId: target.id,
+              status: "no-op",
+              detail: `${target.label} is already at that boundary.`,
+            },
+          ],
+    };
+    return {
+      ok: true,
+      strategyGroups: [group],
+      proposals: group.proposals,
+    };
+  }
+
   const parsed = parseColorPrompt(instruction);
   if (parsed.matched && !parsed.ok) return { ok: false, error: parsed.error };
-  const explicitFailures = new Map<
-    string,
-    { code: string; detail: string }
-  >();
+  const explicitFailures = new Map<string, { code: string; detail: string }>();
   const specs: StrategySpec[] =
     parsed.matched && parsed.ok
       ? [

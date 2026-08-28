@@ -32,7 +32,7 @@ it("lets the root Page background be selected and edited", async () => {
   expect(screen.getByLabelText("Editable template canvas")).toHaveStyle({
     backgroundColor: "#112233",
   });
-  expect(screen.getByText("Saved · v2")).toBeInTheDocument();
+  expect(screen.getByText("Autosaved · v2")).toBeInTheDocument();
 });
 it("exposes every editable canvas element as a focusable option", () => {
   render(
@@ -73,7 +73,9 @@ it("makes the latest additive selection active without losing the group", async 
   expect(headline).toHaveAttribute("aria-selected", "true");
   expect(intro).toHaveAttribute("aria-selected", "true");
   expect(intro).toHaveAttribute("data-active", "true");
-  expect(screen.getByRole("heading", { name: "Hero copy" })).toBeInTheDocument();
+  expect(
+    screen.getByRole("heading", { name: "Hero copy" }),
+  ).toBeInTheDocument();
   expect(screen.getByText(/2 selected · active element/i)).toBeInTheDocument();
 
   await user.click(screen.getByRole("tab", { name: "Code" }));
@@ -96,7 +98,9 @@ it("promotes the most recent remaining member when the active item is removed", 
 
   expect(intro).toHaveAttribute("aria-selected", "false");
   expect(headline).toHaveAttribute("data-active", "true");
-  expect(screen.getByRole("heading", { name: "Hero heading" })).toBeInTheDocument();
+  expect(
+    screen.getByRole("heading", { name: "Hero heading" }),
+  ).toBeInTheDocument();
 });
 
 it("edits bounded container spacing and records the revision", async () => {
@@ -112,11 +116,13 @@ it("edits bounded container spacing and records the revision", async () => {
   const services = document.querySelector(".services");
 
   expect(services).toHaveStyle({ padding: "24px", gap: "16px" });
-  await user.click(screen.getByRole("button", { name: "Increase container padding" }));
+  await user.click(
+    screen.getByRole("button", { name: "Increase container padding" }),
+  );
   await user.click(screen.getByRole("button", { name: "Increase item gap" }));
 
   expect(services).toHaveStyle({ padding: "28px", gap: "20px" });
-  expect(screen.getByText("Saved · v3")).toBeInTheDocument();
+  expect(screen.getByText("Autosaved · v3")).toBeInTheDocument();
 });
 
 it("edits container direction through a constrained control", async () => {
@@ -135,7 +141,7 @@ it("edits container direction through a constrained control", async () => {
     flexDirection: "column",
   });
   expect(screen.getByRole("radio", { name: "column" })).toBeChecked();
-  expect(screen.getByText("Saved · v2")).toBeInTheDocument();
+  expect(screen.getByText("Autosaved · v2")).toBeInTheDocument();
 });
 
 it("keeps viewport-only container spacing isolated", async () => {
@@ -164,11 +170,53 @@ it("positions a child through a constrained cross-axis value", async () => {
       <App />
     </AppProviders>,
   );
-  await user.selectOptions(screen.getByLabelText("Position in Container"), "end");
+  await user.selectOptions(
+    screen.getByLabelText("Position in Container"),
+    "end",
+  );
 
   expect(screen.getByTestId("element-headline")).toHaveStyle({
     alignSelf: "end",
   });
   expect(screen.getByLabelText("Position in Container")).toHaveValue("end");
-  expect(screen.getByText("Saved · v2")).toBeInTheDocument();
+  expect(screen.getByText("Autosaved · v2")).toBeInTheDocument();
+});
+
+it("moves one element later without changing its properties", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+  const headline = screen.getByTestId("element-headline");
+  const intro = screen.getByTestId("element-intro");
+  const beforeStyle = headline.getAttribute("style");
+
+  await user.click(screen.getByRole("button", { name: "Move Later" }));
+
+  expect(
+    headline.compareDocumentPosition(intro) & Node.DOCUMENT_POSITION_PRECEDING,
+  ).toBeTruthy();
+  expect(headline.getAttribute("style")).toBe(beforeStyle);
+  expect(screen.getByText("Autosaved · v2")).toBeInTheDocument();
+});
+
+it("requires one selection and All Views for manual reorder", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+  await user.selectOptions(screen.getByLabelText("Edit Scope"), "mobile");
+  expect(screen.getByRole("button", { name: "Move Later" })).toBeDisabled();
+  expect(screen.getByText(/Order is shared/i)).toBeInTheDocument();
+
+  await user.selectOptions(screen.getByLabelText("Edit Scope"), "all");
+  const intro = screen.getByTestId("element-intro");
+  intro.focus();
+  await user.keyboard("{Shift>}{Enter}{/Shift}");
+  expect(screen.getByRole("button", { name: "Move Later" })).toBeDisabled();
+  expect(screen.getByText(/Select only this element/i)).toBeInTheDocument();
 });

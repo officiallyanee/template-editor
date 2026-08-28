@@ -21,7 +21,9 @@ it("switches and persists interface styles without changing template state", asy
 
   const style = screen.getByLabelText("Interface Style");
   expect(style).toHaveValue("scope");
-  expect(screen.getAllByRole("option", { name: /Scope|Editorial/ })).toHaveLength(2);
+  expect(
+    screen.getAllByRole("option", { name: /Scope|Editorial/ }),
+  ).toHaveLength(2);
 
   await user.selectOptions(style, "editorial");
   expect(document.documentElement.dataset.style).toBe("editorial");
@@ -37,9 +39,9 @@ it("switches and persists interface styles without changing template state", asy
   expect(document.documentElement.dataset.theme).toBe("dark");
   expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute(
     "content",
-    "#000000",
+    "#111111",
   );
-  expect(screen.getByText("Saved · v1")).toBeInTheDocument();
+  expect(screen.getByText("Version saved · v1")).toBeInTheDocument();
 });
 
 it("toggles and persists the editor theme without changing template state", async () => {
@@ -57,7 +59,7 @@ it("toggles and persists the editor theme without changing template state", asyn
   expect(localStorage.getItem("scope-ui-theme")).toBe("dark");
   expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute(
     "content",
-    "#121211",
+    "#17191c",
   );
-  expect(screen.getByText("Saved · v1")).toBeInTheDocument();
+  expect(screen.getByText("Version saved · v1")).toBeInTheDocument();
 });

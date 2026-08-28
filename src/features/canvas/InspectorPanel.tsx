@@ -5,6 +5,7 @@ import type { ElementProperties } from "../../state/types";
 import { canvasEditToCommand } from "./canvasEditToCommand";
 import { PropertyStepper } from "./PropertyStepper";
 import { PositionControl } from "./PositionControl";
+import { ReorderControl } from "./ReorderControl";
 export function InspectorPanel() {
   const { state, actions } = useEditor();
   const element = state.activeId
@@ -109,9 +110,7 @@ export function InspectorPanel() {
           max={96}
           step={4}
           overrideLabel={
-            hasOverride("gap")
-              ? `${state.viewport} override active`
-              : undefined
+            hasOverride("gap") ? `${state.viewport} override active` : undefined
           }
           onChange={(gap) => commit({ gap })}
         />
@@ -146,6 +145,7 @@ export function InspectorPanel() {
           onChange={(alignSelf) => commit({ alignSelf })}
         />
       )}
+      <ReorderControl elementId={element.id} />
       {values.color && (
         <label className="flex items-center justify-between gap-3 rounded-lg border border-border-default bg-raised p-3">
           <span className="text-xs font-semibold text-secondary">

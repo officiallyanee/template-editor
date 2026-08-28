@@ -93,7 +93,7 @@ it("previews a pending proposal without committing it", async () => {
   await user.click(screen.getByRole("button", { name: "Preview on Canvas" }));
 
   expect(heading).toHaveStyle({ fontSize: "60px" });
-  expect(screen.getByText("Saved · v1")).toBeInTheDocument();
+  expect(screen.getByText("Version saved · v1")).toBeInTheDocument();
   expect(screen.getByText("pending")).toBeInTheDocument();
 
   await user.click(screen.getByRole("button", { name: "Stop Preview" }));
@@ -117,12 +117,18 @@ it("switches strategy choices with native keyboard controls", async () => {
   expect(
     screen.getByRole("radio", { name: /Accessible Contrast/i }),
   ).toBeChecked();
-  expect(screen.getByText(/already matches this strategy/i)).toBeInTheDocument();
+  expect(
+    screen.getByText(/already matches this strategy/i),
+  ).toBeInTheDocument();
 });
 
 it("warns without blocking an explicit low-contrast color request", async () => {
   const user = userEvent.setup();
-  render(<AppProviders><App /></AppProviders>);
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
   await user.click(screen.getByRole("tab", { name: "AI" }));
   const instruction = screen.getByRole("textbox", { name: "AI Instruction" });
   await user.clear(instruction);
@@ -134,10 +140,18 @@ it("warns without blocking an explicit low-contrast color request", async () => 
 
 it("shows unsupported members without hiding valid mixed-selection proposals", async () => {
   const user = userEvent.setup();
-  render(<AppProviders><App /></AppProviders>);
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
   await user.keyboard("{Shift>}");
-  await user.click(screen.getByRole("option", { name: /Primary action button/i }));
-  await user.click(screen.getByRole("option", { name: /Services grid container/i }));
+  await user.click(
+    screen.getByRole("option", { name: /Primary action button/i }),
+  );
+  await user.click(
+    screen.getByRole("option", { name: /Services grid container/i }),
+  );
   await user.keyboard("{/Shift}");
   await user.click(screen.getByRole("tab", { name: "AI" }));
   const instruction = screen.getByRole("textbox", { name: "AI Instruction" });
@@ -146,5 +160,7 @@ it("shows unsupported members without hiding valid mixed-selection proposals", a
   await user.click(screen.getByRole("button", { name: /Run AI Demo/i }));
   expect(screen.getAllByText("Primary action")).not.toHaveLength(0);
   expect(screen.getAllByText("Services grid")).not.toHaveLength(0);
-  expect(screen.getAllByText(/does not support this strategy/i)).toHaveLength(2);
+  expect(screen.getAllByText(/does not support this strategy/i)).toHaveLength(
+    2,
+  );
 });
