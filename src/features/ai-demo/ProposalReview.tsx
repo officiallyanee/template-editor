@@ -1,6 +1,7 @@
 import { useEditor } from "../../state/StateContext";
 import { ProposalCard } from "./ProposalCard";
 import { StrategySelector } from "./StrategySelector";
+import { ProposalOutcomeRow } from "./ProposalOutcomeRow";
 
 export function ProposalReview() {
   const { state } = useEditor();
@@ -36,6 +37,9 @@ export function ProposalReview() {
       <div className="flex flex-col gap-3">
         {active.proposals.map((item) => (
           <ProposalCard item={item} key={item.id} />
+        ))}
+        {active.outcomes.map((outcome) => (
+          <ProposalOutcomeRow outcome={outcome} key={outcome.id} />
         ))}
       </div>
     </section>

@@ -13,7 +13,9 @@ const timeFormat = new Intl.DateTimeFormat(undefined, {
 });
 export function HistoryPanel() {
   const { state, actions } = useEditor();
-  const element = state.template.elements[state.selectedIds[0]];
+  const element = state.activeId
+    ? state.template.elements[state.activeId]
+    : undefined;
   if (!element)
     return (
       <p className="py-8 text-center text-sm text-ink-muted">
@@ -30,6 +32,9 @@ export function HistoryPanel() {
           <span className="block text-xs text-ink-muted">
             {entries.length} recoverable revision
             {entries.length === 1 ? "" : "s"}
+            {state.selectedIds.length > 1
+              ? ` · active of ${state.selectedIds.length} selected`
+              : ""}
           </span>
         </div>
       </div>

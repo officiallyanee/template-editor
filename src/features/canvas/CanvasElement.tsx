@@ -12,6 +12,7 @@ export function CanvasElement({ element }: { element: TemplateElement }) {
   );
   const props = resolvedWithProposal(element, state.viewport, previewProposal);
   const selected = state.selectedIds.includes(element.id);
+  const active = state.activeId === element.id;
   const previewed = previewProposal?.command.targetIds.includes(element.id);
   const select = (event: MouseEvent | KeyboardEvent) => {
     event.stopPropagation();
@@ -28,6 +29,7 @@ export function CanvasElement({ element }: { element: TemplateElement }) {
     padding: props.padding,
     gap: props.gap,
     flexDirection: props.direction,
+    alignSelf: props.alignSelf,
     borderRadius: props.borderRadius,
   } as CSSProperties;
   const common = {
@@ -36,7 +38,8 @@ export function CanvasElement({ element }: { element: TemplateElement }) {
     tabIndex: 0,
     role: "option",
     "aria-selected": selected,
-    className: `template-element m-0 max-w-[720px] cursor-pointer whitespace-pre-line rounded-md ${element.type === "button" ? "grid place-items-center" : ""} ${selected ? "is-selected" : ""} ${previewed ? "is-proposal-preview" : ""}`,
+    "data-active": active || undefined,
+    className: `template-element m-0 max-w-[720px] cursor-pointer whitespace-pre-line rounded-md ${element.type === "button" ? "grid place-items-center" : ""} ${selected ? "is-selected" : ""} ${active ? "is-active" : ""} ${previewed ? "is-proposal-preview" : ""}`,
     style,
     onClick: select,
     onKeyDown: (event: KeyboardEvent) => {

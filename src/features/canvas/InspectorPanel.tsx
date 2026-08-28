@@ -1,12 +1,15 @@
-import { AlignCenter, Minus, Plus } from "lucide-react";
-import { Button } from "../../components/Button";
+import { AlignCenter } from "lucide-react";
 import { useEditor } from "../../state/StateContext";
 import { resolved } from "../../state/resolver";
 import type { ElementProperties } from "../../state/types";
 import { canvasEditToCommand } from "./canvasEditToCommand";
+import { PropertyStepper } from "./PropertyStepper";
+import { PositionControl } from "./PositionControl";
 export function InspectorPanel() {
   const { state, actions } = useEditor();
-  const element = state.template.elements[state.selectedIds[0]];
+  const element = state.activeId
+    ? state.template.elements[state.activeId]
+    : undefined;
   if (!element)
     return (
       <p className="py-8 text-center text-sm text-ink-muted">
@@ -34,6 +37,9 @@ export function InspectorPanel() {
         </span>
         <h3 className="mt-1 text-lg font-bold text-balance">{element.label}</h3>
         <p className="mt-1 text-xs leading-normal text-ink-muted">
+          {state.selectedIds.length > 1 && (
+            <>{state.selectedIds.length} selected · active element. </>
+          )}
           Editing{" "}
           {state.editScope === "all" ? "all views" : `${state.editScope} only`}.
         </p>
@@ -50,75 +56,95 @@ export function InspectorPanel() {
           />
         </label>
       )}
-      {values.fontSize && (
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-border-default bg-raised p-3">
-          <div>
-            <span className="block text-[11px] font-semibold tracking-[.04em] text-ink-muted uppercase">
-              Text Size
-            </span>
-            <strong className="mt-0.5 block text-sm tabular-nums">
-              {values.fontSize} px
-            </strong>
-            {hasOverride("fontSize") && (
-              <small className="mt-1 block text-[10px] text-primary">
-                {state.viewport} override active
-              </small>
-            )}
-          </div>
-          <div className="flex gap-1.5">
-            <Button
-              aria-label="Decrease text size"
-              onClick={() =>
-                commit({ fontSize: Math.max(10, values.fontSize! - 2) })
-              }
-            >
-              <Minus size={15} />
-            </Button>
-            <Button
-              aria-label="Increase text size"
-              onClick={() =>
-                commit({ fontSize: Math.min(96, values.fontSize! + 2) })
-              }
-            >
-              <Plus size={15} />
-            </Button>
-          </div>
-        </div>
+      {values.fontSize !== undefined && (
+        <PropertyStepper
+          label="Text Size"
+          value={values.fontSize}
+          min={10}
+          max={96}
+          step={2}
+          overrideLabel={
+            hasOverride("fontSize")
+              ? `${state.viewport} override active`
+              : undefined
+          }
+          onChange={(fontSize) => commit({ fontSize })}
+        />
       )}
-      {values.width && (
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-border-default bg-raised p-3">
-          <div>
-            <span className="block text-[11px] font-semibold tracking-[.04em] text-ink-muted uppercase">
-              Width
-            </span>
-            <strong className="mt-0.5 block text-sm tabular-nums">
-              {values.width} px
-            </strong>
-            {hasOverride("width") && (
-              <small className="mt-1 block text-[10px] text-primary">
-                {state.viewport} override active
-              </small>
-            )}
+      {values.width !== undefined && (
+        <PropertyStepper
+          label="Width"
+          value={values.width}
+          min={40}
+          max={900}
+          step={16}
+          overrideLabel={
+            hasOverride("width")
+              ? `${state.viewport} override active`
+              : undefined
+          }
+          onChange={(width) => commit({ width })}
+        />
+      )}
+      {element.type === "container" && values.padding !== undefined && (
+        <PropertyStepper
+          label="Container Padding"
+          value={values.padding}
+          min={0}
+          max={120}
+          step={4}
+          overrideLabel={
+            hasOverride("padding")
+              ? `${state.viewport} override active`
+              : undefined
+          }
+          onChange={(padding) => commit({ padding })}
+        />
+      )}
+      {element.type === "container" && values.gap !== undefined && (
+        <PropertyStepper
+          label="Item Gap"
+          value={values.gap}
+          min={0}
+          max={96}
+          step={4}
+          overrideLabel={
+            hasOverride("gap")
+              ? `${state.viewport} override active`
+              : undefined
+          }
+          onChange={(gap) => commit({ gap })}
+        />
+      )}
+      {element.type === "container" && values.direction && (
+        <fieldset className="m-0 rounded-lg border border-border-default bg-raised p-3">
+          <legend className="px-1 text-[11px] font-semibold tracking-[.04em] text-ink-muted uppercase">
+            Layout Direction
+          </legend>
+          <div className="mt-1 grid grid-cols-2 gap-2">
+            {(["row", "column"] as const).map((direction) => (
+              <label
+                key={direction}
+                className="flex cursor-pointer items-center gap-2 rounded-md border border-border-default px-3 py-2 text-sm capitalize hover:bg-surface-hover"
+              >
+                <input
+                  type="radio"
+                  name="layout-direction"
+                  value={direction}
+                  checked={values.direction === direction}
+                  onChange={() => commit({ direction })}
+                />
+                {direction}
+              </label>
+            ))}
           </div>
-          <div className="flex gap-1.5">
-            <Button
-              aria-label="Decrease width"
-              onClick={() =>
-                commit({ width: Math.max(40, values.width! - 16) })
-              }
-            >
-              <Minus size={15} />
-            </Button>
-            <Button
-              aria-label="Increase width"
-              onClick={() =>
-                commit({ width: Math.min(900, values.width! + 16) })
-              }
-            >
-              <Plus size={15} />
-            </Button>
-          </div>
-        </div>
+        </fieldset>
+      )}
+      {element.parentId !== null && (
+        <PositionControl
+          value={values.alignSelf ?? "auto"}
+          onChange={(alignSelf) => commit({ alignSelf })}
+        />
       )}
       {values.color && (
         <label className="flex items-center justify-between gap-3 rounded-lg border border-border-default bg-raised p-3">

@@ -104,6 +104,7 @@ export function buildProposal(
   if (error) return { error };
   return {
     id: deterministicId("proposal", seed),
+    selectionSnapshot: [...selectedIds],
     command,
     before: Object.fromEntries(
       Object.keys(changedValues).map((key) => [

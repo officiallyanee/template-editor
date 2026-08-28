@@ -75,6 +75,25 @@
 .services.is-proposal-preview::after {
   border-style: dashed;
 }
+.template-element.is-active::after,
+.services.is-active::after {
+  box-shadow: 0 0 0 2px var(--selection-fill);
+}
+
+:root[data-style="editorial"] :is(h1, h2, h3) {
+  font-family: var(--font-display);
+  font-weight: 400;
+}
+
+:root[data-style="editorial"] .preview [data-type="paragraph"] {
+  font-family: var(--font-editorial-body);
+}
+
+:root[data-style="editorial"] .preview [data-type="button"],
+:root[data-style="editorial"] .template-element::after,
+:root[data-style="editorial"] .services::after {
+  border-radius: 0 !important;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,

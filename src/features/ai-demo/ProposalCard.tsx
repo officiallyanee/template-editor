@@ -54,7 +54,7 @@ export function ProposalCard({ item }: { item: PendingProposal }) {
   const isPreviewing = state.previewProposalId === item.id;
   const accept = () => {
     const outcome = actions.dispatch(item.command, {
-      selectedIds: item.command.targetIds,
+      selectedIds: item.selectionSnapshot,
       requestedScope: item.command.viewportScope,
     });
     if (outcome.ok)

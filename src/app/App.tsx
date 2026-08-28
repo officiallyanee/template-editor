@@ -6,6 +6,7 @@ import { ViewportSwitcher } from "../features/viewport/ViewportSwitcher";
 import { useEditor } from "../state/StateContext";
 import type { ViewportScope } from "../state/types";
 import { RightPanel } from "./RightPanel";
+import { StyleSwitcher } from "./StyleSwitcher";
 import { useTheme } from "./ThemeProvider";
 export function App() {
   const { state, actions } = useEditor();
@@ -18,12 +19,12 @@ export function App() {
       >
         Skip to canvas
       </a>
-      <header className="relative z-10 flex h-[68px] items-center justify-between gap-5 border-b border-hairline bg-canvas px-5 max-sm:h-28 max-sm:flex-wrap max-sm:content-center max-sm:gap-2 max-sm:px-3">
-        <div className="flex items-center gap-2.5">
-          <div className="grid size-[34px] place-items-center rounded-[9px] bg-ink text-canvas">
+      <header className="relative z-10 flex h-[68px] min-w-0 items-center justify-between gap-5 border-b border-hairline bg-canvas px-5 max-sm:h-28 max-sm:flex-wrap max-sm:content-center max-sm:gap-2 max-sm:px-3">
+        <div className="flex shrink-0 items-center gap-2.5">
+          <div className="grid size-[34px] place-items-center rounded-lg bg-ink text-canvas">
             <ShieldCheck size={19} aria-hidden="true" />
           </div>
-          <div className="max-sm:hidden">
+          <div className="max-lg:hidden">
             <strong className="block text-[17px] tracking-[-0.25px]">
               Scope
             </strong>
@@ -33,15 +34,16 @@ export function App() {
           </div>
         </div>
         <ViewportSwitcher />
-        <div className="flex items-center gap-3 max-sm:w-full max-sm:justify-end max-sm:gap-2">
-          <label className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-3 max-sm:grid max-sm:w-full max-sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto] max-sm:gap-2">
+          <StyleSwitcher />
+          <label className="flex min-w-0 items-center gap-2">
             <span className="text-[11px] font-semibold tracking-[.06em] text-ink-muted uppercase max-sm:sr-only">
               Edit Scope
             </span>
             <select
               aria-label="Edit Scope"
               name="edit-scope"
-              className="rounded-lg border border-hairline bg-raised py-1.5 pr-7 pl-2 text-[13px] text-ink"
+              className="min-w-0 rounded-lg border border-hairline bg-raised py-1.5 pr-7 pl-2 text-[13px] text-ink max-sm:w-full"
               value={state.editScope}
               onChange={(e) =>
                 actions.setEditScope(e.target.value as ViewportScope)
@@ -92,13 +94,13 @@ export function App() {
       </header>
       {state.lastError && (
         <div
-          className="fixed top-[78px] left-1/2 z-20 -translate-x-1/2 rounded-lg border border-danger-border bg-danger-surface px-3.5 py-2.5 text-[13px] text-danger"
+          className="fixed top-[78px] left-1/2 z-20 max-w-[calc(100vw-24px)] -translate-x-1/2 break-words rounded-lg border border-danger-border bg-danger-surface px-3.5 py-2.5 text-[13px] text-danger max-sm:top-[120px]"
           role="alert"
         >
           {state.lastError}
         </div>
       )}
-      <div className="grid h-[calc(100dvh-68px)] min-w-0 grid-cols-[230px_minmax(480px,1fr)_350px] max-xl:grid-cols-[190px_minmax(380px,1fr)_320px] max-lg:grid-cols-[minmax(0,1fr)_320px] max-sm:h-[calc(100dvh-112px)] max-sm:grid-cols-1 max-sm:grid-rows-[minmax(320px,1fr)_minmax(280px,45vh)]">
+      <div className="grid h-[calc(100dvh-68px)] min-h-0 min-w-0 grid-cols-[230px_minmax(480px,1fr)_350px] overflow-hidden max-xl:grid-cols-[190px_minmax(380px,1fr)_320px] max-lg:grid-cols-[minmax(0,1fr)_320px] max-sm:h-[calc(100dvh-112px)] max-sm:grid-cols-1 max-sm:grid-rows-[minmax(0,55fr)_minmax(0,45fr)]">
         <LayerList />
         <Canvas />
         <RightPanel />

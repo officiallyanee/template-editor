@@ -15,7 +15,7 @@ it("restores one element by appending history without changing its sibling", () 
   const entry = state.elements.headline.history[0];
   const laterHeadline = dispatchCommand(
     state,
-    command(state, "headline", { color: "#005bab" }),
+    command(state, "headline", { color: "#0075de" }),
   );
   if (!laterHeadline.ok) throw new Error();
   state = laterHeadline.state;
@@ -45,7 +45,7 @@ it("restores one element by appending history without changing its sibling", () 
     60,
   );
   expect(resolved(restored.state.elements.headline, "desktop").color).toBe(
-    "#171717",
+    "#005bab",
   );
   expect(restoreWouldChange(restored.state.elements.headline, entry)).toBe(
     false,

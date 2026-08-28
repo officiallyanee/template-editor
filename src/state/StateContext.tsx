@@ -32,6 +32,7 @@ interface EditorState {
   viewport: Viewport;
   editScope: ViewportScope;
   selectedIds: ElementId[];
+  activeId: ElementId | null;
   strategyGroups: StrategyGroup[];
   activeStrategyId: string | null;
   previewProposalId: string | null;
@@ -71,6 +72,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     viewport: "desktop",
     editScope: "all",
     selectedIds: ["headline"],
+    activeId: "headline",
     strategyGroups: [],
     activeStrategyId: null,
     previewProposalId: null,
@@ -106,14 +108,24 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       setViewport: (viewport) => setState((s) => ({ ...s, viewport })),
       setEditScope: (editScope) => setState((s) => ({ ...s, editScope })),
       select: (id, additive = false) =>
-        setState((s) => ({
-          ...s,
-          selectedIds: additive
-            ? s.selectedIds.includes(id)
-              ? s.selectedIds.filter((item) => item !== id)
-              : [...s.selectedIds, id]
-            : [id],
-        })),
+        setState((s) => {
+          if (!additive) return { ...s, selectedIds: [id], activeId: id };
+          if (!s.selectedIds.includes(id))
+            return {
+              ...s,
+              selectedIds: [...s.selectedIds, id],
+              activeId: id,
+            };
+          const selectedIds = s.selectedIds.filter((item) => item !== id);
+          return {
+            ...s,
+            selectedIds,
+            activeId:
+              s.activeId === id
+                ? (selectedIds.at(-1) ?? null)
+                : s.activeId,
+          };
+        }),
       setStrategyGroups: (strategyGroups) =>
         setState((s) => ({
           ...s,
@@ -180,6 +192,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           ...s,
           template: resetTemplate(),
           selectedIds: ["headline"],
+          activeId: "headline",
           strategyGroups: [],
           activeStrategyId: null,
           previewProposalId: null,

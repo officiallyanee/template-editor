@@ -16,6 +16,7 @@ export interface ElementProperties {
   padding?: number;
   gap?: number;
   direction?: "row" | "column";
+  alignSelf?: "auto" | "start" | "center" | "end" | "stretch";
   borderRadius?: number;
 }
 
@@ -99,6 +100,7 @@ export interface ScopeContext {
 
 export interface PendingProposal {
   id: string;
+  selectionSnapshot: ElementId[];
   command: EditCommand;
   before: Partial<ElementProperties>;
   after: Partial<ElementProperties>;
@@ -111,10 +113,18 @@ export interface PendingProposal {
   };
 }
 
+export interface ProposalOutcome {
+  id: string;
+  targetId: ElementId;
+  status: "no-op" | "unsupported" | "invalid";
+  detail: string;
+}
+
 export interface StrategyGroup {
   strategyId: string;
   label: string;
   rationale: string;
   metrics?: { evaluated: number; compliant: number };
   proposals: PendingProposal[];
+  outcomes: ProposalOutcome[];
 }

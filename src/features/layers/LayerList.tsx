@@ -11,7 +11,7 @@ export function LayerList() {
     });
   return (
     <aside
-      className="flex min-h-0 flex-col border-r border-border-default px-3.5 py-5 max-lg:hidden"
+      className="flex min-h-0 flex-col overflow-hidden border-r border-border-default px-3.5 py-5 max-lg:hidden"
       aria-label="Template layers"
     >
       <div className="px-2 pb-4.5">
@@ -26,18 +26,20 @@ export function LayerList() {
         </p>
       </div>
       <div
-        className="flex flex-col gap-[3px] overflow-auto"
+        className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain p-1"
         role="listbox"
         aria-multiselectable="true"
       >
         {elements.map((element) => {
           const selected = state.selectedIds.includes(element.id);
+          const active = state.activeId === element.id;
           return (
             <button
               key={element.id}
               role="option"
               aria-selected={selected}
-              className={`grid w-full cursor-pointer grid-cols-[18px_minmax(0,1fr)_16px] items-center gap-2 rounded-md border-0 px-2 py-2 text-left transition-colors duration-150 hover:bg-surface-hover ${selected ? "bg-selection text-primary" : "bg-transparent text-secondary"}`}
+              data-active={active || undefined}
+              className={`grid w-full cursor-pointer grid-cols-[18px_minmax(0,1fr)_16px] items-center gap-2 rounded-md border-0 px-2 py-2 text-left transition-[background-color,color,box-shadow] duration-150 hover:bg-surface-hover ${selected ? "bg-selection text-primary" : "bg-transparent text-secondary"} ${active ? "ring-1 ring-primary" : ""}`}
               onClick={(event) =>
                 actions.select(
                   element.id,
@@ -52,6 +54,7 @@ export function LayerList() {
                 </strong>
                 <small className="mt-0.5 block truncate text-[11px] text-ink-muted capitalize">
                   {element.type}
+                  {active ? " · active" : ""}
                 </small>
               </span>
               {selected && <MousePointer2 size={14} aria-hidden="true" />}
@@ -59,7 +62,7 @@ export function LayerList() {
           );
         })}
       </div>
-      <div className="mt-auto flex items-center gap-2 rounded-xl bg-raised p-3 shadow-flat">
+      <div className="mt-3 flex shrink-0 items-center gap-2 rounded-xl bg-raised p-3 shadow-flat">
         <span className="size-2 rounded-full bg-primary" />
         <div>
           <strong className="block text-xs">

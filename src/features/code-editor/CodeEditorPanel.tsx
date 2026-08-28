@@ -7,7 +7,9 @@ import { parseAndDiff } from "./parseAndDiff";
 
 export function CodeEditorPanel() {
   const { state } = useEditor();
-  const element = state.template.elements[state.selectedIds[0]];
+  const element = state.activeId
+    ? state.template.elements[state.activeId]
+    : undefined;
   if (!element)
     return (
       <p className="py-8 text-center text-sm text-ink-muted">
@@ -24,9 +26,12 @@ export function CodeEditorPanel() {
 
 function CodeEditorForm({ initialJson }: { initialJson: string }) {
   const { state, actions } = useEditor();
-  const element = state.template.elements[state.selectedIds[0]];
   const [json, setJson] = useState(initialJson);
   const [error, setError] = useState<string | null>(null);
+  const element = state.activeId
+    ? state.template.elements[state.activeId]
+    : undefined;
+  if (!element) return null;
   const apply = () => {
     const result = parseAndDiff(
       json,
@@ -47,6 +52,9 @@ function CodeEditorForm({ initialJson }: { initialJson: string }) {
           <strong className="block truncate text-sm">{element.label}</strong>
           <span className="block text-xs text-ink-muted">
             Resolved {state.viewport} properties
+            {state.selectedIds.length > 1
+              ? ` · active of ${state.selectedIds.length} selected`
+              : ""}
           </span>
         </div>
       </div>

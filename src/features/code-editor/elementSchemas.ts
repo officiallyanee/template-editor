@@ -17,6 +17,7 @@ const base = z
     padding: z.number().min(0).max(120).optional(),
     gap: z.number().min(0).max(96).optional(),
     direction: z.enum(["row", "column"]).optional(),
+    alignSelf: z.enum(["auto", "start", "center", "end", "stretch"]).optional(),
     borderRadius: z.number().min(0).max(100).optional(),
   })
   .strict();
@@ -31,6 +32,7 @@ export const elementSchemas: Record<
     fontSize: true,
     fontWeight: true,
     align: true,
+    alignSelf: true,
   }),
   paragraph: base.pick({
     text: true,
@@ -38,6 +40,7 @@ export const elementSchemas: Record<
     fontSize: true,
     fontWeight: true,
     align: true,
+    alignSelf: true,
   }),
   button: base.pick({
     text: true,
@@ -47,6 +50,7 @@ export const elementSchemas: Record<
     height: true,
     borderRadius: true,
     fontWeight: true,
+    alignSelf: true,
   }),
   container: base.pick({
     backgroundColor: true,
@@ -55,5 +59,6 @@ export const elementSchemas: Record<
     direction: true,
     width: true,
     height: true,
+    alignSelf: true,
   }),
 };

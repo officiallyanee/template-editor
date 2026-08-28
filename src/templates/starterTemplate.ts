@@ -18,7 +18,7 @@ export const starterTemplate: TemplateState = {
       parentId: null,
       order: 0,
       base: {
-        backgroundColor: "#ffffff",
+        backgroundColor: "#ffe5e5",
         padding: 24,
         gap: 20,
         direction: "column",
@@ -32,7 +32,7 @@ export const starterTemplate: TemplateState = {
       order: 0,
       base: {
         text: "BRIGHTPATH STUDIO",
-        color: "#0075de",
+        color: "#0067b9",
         fontSize: 13,
         fontWeight: 700,
         align: "center",
@@ -46,7 +46,7 @@ export const starterTemplate: TemplateState = {
       order: 1,
       base: {
         text: "Build a brighter business, one clear step at a time.",
-        color: "#171717",
+        color: "#005bab",
         fontSize: 54,
         fontWeight: 700,
         align: "center",

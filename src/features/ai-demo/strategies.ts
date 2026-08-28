@@ -265,6 +265,20 @@ export function documentedStrategies(
               : null,
       },
     ];
+  const position = text.match(/\b(?:move|align|position)\b.*\b(start|center|end|stretch)\b/)?.[1] as
+    | NonNullable<ElementProperties["alignSelf"]>
+    | undefined;
+  if (position)
+    return [
+      {
+        strategyId: "cross-axis-position",
+        label: "Position in Container",
+        rationale:
+          "Moves each supported selection on its parent container's cross axis without freeform coordinates.",
+        valuesFor: (element) =>
+          element.parentId === null ? null : { alignSelf: position },
+      },
+    ];
   if (/blue|color/.test(text)) return [prominentStrategies()[1]];
   return [];
 }

@@ -1,6 +1,7 @@
 import { resolved } from "../../state/resolver";
 import type {
   PendingProposal,
+  ProposalOutcome,
   StrategyGroup,
   TemplateState,
   Viewport,
@@ -53,7 +54,10 @@ export function runDemo(
 
   const parsed = parseColorPrompt(instruction);
   if (parsed.matched && !parsed.ok) return { ok: false, error: parsed.error };
-  let explicitFailure: { code: string; detail: string } | undefined;
+  const explicitFailures = new Map<
+    string,
+    { code: string; detail: string }
+  >();
   const specs: StrategySpec[] =
     parsed.matched && parsed.ok
       ? [
@@ -71,7 +75,7 @@ export function runDemo(
                 current,
               );
               if ("error" in result) {
-                explicitFailure = result.error;
+                explicitFailures.set(element.id, result.error);
                 return null;
               }
               return result;
@@ -103,14 +107,26 @@ export function runDemo(
       },
     };
 
-  const strategyGroups: StrategyGroup[] = [];
+  const candidateGroups: StrategyGroup[] = [];
   for (const spec of specs) {
     const proposals: PendingProposal[] = [];
+    const outcomes: ProposalOutcome[] = [];
     for (const element of elements) {
       const targetProps =
         scope === "all" ? element.base : resolved(element, scope);
       const values = spec.valuesFor(element, targetProps);
-      if (!values) continue;
+      if (!values) {
+        const failure = explicitFailures.get(element.id);
+        outcomes.push({
+          id: `${spec.strategyId}:${element.id}:${failure ? "invalid" : "unsupported"}`,
+          targetId: element.id,
+          status: failure ? "invalid" : "unsupported",
+          detail: failure
+            ? failure.detail
+            : `${element.label} does not support this strategy.`,
+        });
+        continue;
+      }
       const proposal = buildProposal(
         state,
         element,
@@ -122,38 +138,49 @@ export function runDemo(
         baseRevision,
         values,
       );
-      if (proposal && !("id" in proposal))
-        return { ok: false, error: proposal.error };
-      if (proposal) proposals.push(proposal);
+      if (proposal && !("id" in proposal)) {
+        outcomes.push({
+          id: `${spec.strategyId}:${element.id}:invalid`,
+          targetId: element.id,
+          status: "invalid",
+          detail: proposal.error.detail,
+        });
+      } else if (proposal) proposals.push(proposal);
+      else
+        outcomes.push({
+          id: `${spec.strategyId}:${element.id}:no-op`,
+          targetId: element.id,
+          status: "no-op",
+          detail: `${element.label} already matches this strategy.`,
+        });
     }
-    if (explicitFailure) return { ok: false, error: explicitFailure };
-    if (proposals.length)
-      strategyGroups.push({
-        strategyId: spec.strategyId,
-        label: spec.label,
-        rationale: spec.rationale,
-        metrics: {
-          evaluated: proposals.filter((proposal) => proposal.metrics).length,
-          compliant: proposals.filter(
-            (proposal) =>
-              proposal.metrics &&
-              meetsContrast(
-                proposal.metrics.contrastAfter,
-                proposal.metrics.requiredContrast,
-              ),
-          ).length,
-        },
-        proposals,
-      });
+    candidateGroups.push({
+      strategyId: spec.strategyId,
+      label: spec.label,
+      rationale: spec.rationale,
+      metrics: {
+        evaluated: proposals.filter((proposal) => proposal.metrics).length,
+        compliant: proposals.filter(
+          (proposal) =>
+            proposal.metrics &&
+            meetsContrast(
+              proposal.metrics.contrastAfter,
+              proposal.metrics.requiredContrast,
+            ),
+        ).length,
+      },
+      proposals,
+      outcomes,
+    });
   }
+  const actionableGroups = candidateGroups.filter(
+    (group) =>
+      group.proposals.length > 0 ||
+      group.outcomes.some((outcome) => outcome.status !== "unsupported"),
+  );
+  const strategyGroups = actionableGroups.length
+    ? actionableGroups
+    : candidateGroups.slice(0, 1);
   const proposals = strategyGroups.flatMap((group) => group.proposals);
-  return proposals.length
-    ? { ok: true, strategyGroups, proposals }
-    : {
-        ok: false,
-        error: {
-          code: "UNSUPPORTED",
-          detail: "The selected elements do not support that deterministic change.",
-        },
-      };
+  return { ok: true, strategyGroups, proposals };
 }

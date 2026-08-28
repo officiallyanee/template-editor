@@ -1,9 +1,11 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { expect, it } from "vitest";
+import { beforeEach, expect, it } from "vitest";
 import { AppProviders } from "../../app/AppProviders";
 import { Canvas } from "./Canvas";
 import { App } from "../../app/App";
+
+beforeEach(() => localStorage.clear());
 it("selects a canvas element with the keyboard", async () => {
   const user = userEvent.setup();
   render(
@@ -54,4 +56,119 @@ it("selects the root Page from the canvas background with the keyboard", async (
   await user.keyboard("{Enter}");
   expect(screen.getByRole("heading", { name: "Page" })).toBeInTheDocument();
   expect(screen.getByLabelText("Background Color")).toBeInTheDocument();
+});
+
+it("makes the latest additive selection active without losing the group", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+  const headline = screen.getByTestId("element-headline");
+  const intro = screen.getByTestId("element-intro");
+  intro.focus();
+  await user.keyboard("{Shift>}{Enter}{/Shift}");
+
+  expect(headline).toHaveAttribute("aria-selected", "true");
+  expect(intro).toHaveAttribute("aria-selected", "true");
+  expect(intro).toHaveAttribute("data-active", "true");
+  expect(screen.getByRole("heading", { name: "Hero copy" })).toBeInTheDocument();
+  expect(screen.getByText(/2 selected · active element/i)).toBeInTheDocument();
+
+  await user.click(screen.getByRole("tab", { name: "Code" }));
+  expect(screen.getByText(/active of 2 selected/i)).toBeInTheDocument();
+  expect(screen.getAllByText("Hero copy")).not.toHaveLength(0);
+});
+
+it("promotes the most recent remaining member when the active item is removed", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+  const headline = screen.getByTestId("element-headline");
+  const intro = screen.getByTestId("element-intro");
+  intro.focus();
+  await user.keyboard("{Shift>}{Enter}{/Shift}");
+  await user.keyboard("{Shift>}{Enter}{/Shift}");
+
+  expect(intro).toHaveAttribute("aria-selected", "false");
+  expect(headline).toHaveAttribute("data-active", "true");
+  expect(screen.getByRole("heading", { name: "Hero heading" })).toBeInTheDocument();
+});
+
+it("edits bounded container spacing and records the revision", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+  await user.click(
+    screen.getByRole("option", { name: /Services grid container/i }),
+  );
+  const services = document.querySelector(".services");
+
+  expect(services).toHaveStyle({ padding: "24px", gap: "16px" });
+  await user.click(screen.getByRole("button", { name: "Increase container padding" }));
+  await user.click(screen.getByRole("button", { name: "Increase item gap" }));
+
+  expect(services).toHaveStyle({ padding: "28px", gap: "20px" });
+  expect(screen.getByText("Saved · v3")).toBeInTheDocument();
+});
+
+it("edits container direction through a constrained control", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+  await user.click(
+    screen.getByRole("option", { name: /Services grid container/i }),
+  );
+  await user.click(screen.getByRole("radio", { name: "column" }));
+
+  expect(document.querySelector(".services")).toHaveStyle({
+    flexDirection: "column",
+  });
+  expect(screen.getByRole("radio", { name: "column" })).toBeChecked();
+  expect(screen.getByText("Saved · v2")).toBeInTheDocument();
+});
+
+it("keeps viewport-only container spacing isolated", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+  await user.click(
+    screen.getByRole("option", { name: /Services grid container/i }),
+  );
+  await user.selectOptions(screen.getByLabelText("Edit Scope"), "mobile");
+  await user.click(screen.getByRole("button", { name: "Mobile" }));
+  await user.click(screen.getByRole("button", { name: "Increase item gap" }));
+  expect(document.querySelector(".services")).toHaveStyle({ gap: "20px" });
+
+  await user.click(screen.getByRole("button", { name: "Desktop" }));
+  expect(document.querySelector(".services")).toHaveStyle({ gap: "16px" });
+});
+
+it("positions a child through a constrained cross-axis value", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+  await user.selectOptions(screen.getByLabelText("Position in Container"), "end");
+
+  expect(screen.getByTestId("element-headline")).toHaveStyle({
+    alignSelf: "end",
+  });
+  expect(screen.getByLabelText("Position in Container")).toHaveValue("end");
+  expect(screen.getByText("Saved · v2")).toBeInTheDocument();
 });

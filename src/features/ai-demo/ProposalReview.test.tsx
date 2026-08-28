@@ -86,18 +86,18 @@ it("previews a pending proposal without committing it", async () => {
   );
   const heading = screen.getByTestId("element-headline");
 
-  expect(heading).toHaveStyle({ color: "#171717" });
+  expect(heading).toHaveStyle({ fontSize: "54px" });
   await user.click(screen.getByRole("tab", { name: "AI" }));
   await user.click(screen.getByRole("button", { name: /Run AI Demo/i }));
-  await user.click(screen.getByRole("radio", { name: /Accessible Contrast/i }));
+  await user.click(screen.getByRole("radio", { name: /Scale & Space/i }));
   await user.click(screen.getByRole("button", { name: "Preview on Canvas" }));
 
-  expect(heading).toHaveStyle({ color: "#005bab" });
+  expect(heading).toHaveStyle({ fontSize: "60px" });
   expect(screen.getByText("Saved · v1")).toBeInTheDocument();
   expect(screen.getByText("pending")).toBeInTheDocument();
 
   await user.click(screen.getByRole("button", { name: "Stop Preview" }));
-  expect(heading).toHaveStyle({ color: "#171717" });
+  expect(heading).toHaveStyle({ fontSize: "54px" });
 });
 
 it("switches strategy choices with native keyboard controls", async () => {
@@ -117,7 +117,7 @@ it("switches strategy choices with native keyboard controls", async () => {
   expect(
     screen.getByRole("radio", { name: /Accessible Contrast/i }),
   ).toBeChecked();
-  expect(screen.getByText(/contrast checks pass/i)).toBeInTheDocument();
+  expect(screen.getByText(/already matches this strategy/i)).toBeInTheDocument();
 });
 
 it("warns without blocking an explicit low-contrast color request", async () => {
@@ -126,8 +126,25 @@ it("warns without blocking an explicit low-contrast color request", async () => 
   await user.click(screen.getByRole("tab", { name: "AI" }));
   const instruction = screen.getByRole("textbox", { name: "AI Instruction" });
   await user.clear(instruction);
-  await user.type(instruction, "Change text color from #171717 to #ffffff");
+  await user.type(instruction, "Change text color from #005bab to #ffffff");
   await user.click(screen.getByRole("button", { name: /Run AI Demo/i }));
   expect(screen.getByText(/Below WCAG threshold/i)).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Accept Change" })).toBeEnabled();
+});
+
+it("shows unsupported members without hiding valid mixed-selection proposals", async () => {
+  const user = userEvent.setup();
+  render(<AppProviders><App /></AppProviders>);
+  await user.keyboard("{Shift>}");
+  await user.click(screen.getByRole("option", { name: /Primary action button/i }));
+  await user.click(screen.getByRole("option", { name: /Services grid container/i }));
+  await user.keyboard("{/Shift}");
+  await user.click(screen.getByRole("tab", { name: "AI" }));
+  const instruction = screen.getByRole("textbox", { name: "AI Instruction" });
+  await user.clear(instruction);
+  await user.type(instruction, "Make it bigger");
+  await user.click(screen.getByRole("button", { name: /Run AI Demo/i }));
+  expect(screen.getAllByText("Primary action")).not.toHaveLength(0);
+  expect(screen.getAllByText("Services grid")).not.toHaveLength(0);
+  expect(screen.getAllByText(/does not support this strategy/i)).toHaveLength(2);
 });

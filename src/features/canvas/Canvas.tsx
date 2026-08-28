@@ -44,6 +44,7 @@ export function Canvas() {
             backgroundColor: pageProps.backgroundColor,
             padding: pageProps.padding,
             gap: pageProps.gap,
+            flexDirection: pageProps.direction,
           }}
           role="listbox"
           tabIndex={0}
@@ -67,12 +68,14 @@ export function Canvas() {
             item.id === services.id ? (
               <section
                 key={item.id}
-                className={`services flex w-full max-w-[720px] cursor-pointer rounded-md ${state.selectedIds.includes(item.id) ? "is-selected" : ""} ${previewProposal?.command.targetIds.includes(item.id) ? "is-proposal-preview" : ""}`}
+                className={`services flex w-full max-w-[720px] cursor-pointer rounded-md ${state.selectedIds.includes(item.id) ? "is-selected" : ""} ${state.activeId === item.id ? "is-active" : ""} ${previewProposal?.command.targetIds.includes(item.id) ? "is-proposal-preview" : ""}`}
+                data-active={state.activeId === item.id || undefined}
                 style={{
                   backgroundColor: serviceProps.backgroundColor,
                   padding: serviceProps.padding,
                   gap: serviceProps.gap,
                   flexDirection: serviceProps.direction,
+                  alignSelf: serviceProps.alignSelf,
                 }}
                 tabIndex={0}
                 role="option"

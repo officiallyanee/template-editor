@@ -13,14 +13,15 @@ const PROMPT_PAIRS: Array<{ action: string; negation: string }> = [
   { action: "Rewrite this to be friendlier", negation: "" },
   { action: "Make selected items compact", negation: "" },
   { action: "Stack this on mobile", negation: "" },
+  { action: "Move this to the end", negation: "Move this to the beginning" },
 ];
 
 export function AiDemoPanel() {
   const { state, actions } = useEditor();
 
   // Derive the current element's color properties from the active edit-scope layer
-  const selectedElement = state.selectedIds[0]
-    ? state.template.elements[state.selectedIds[0]]
+  const selectedElement = state.activeId
+    ? state.template.elements[state.activeId]
     : undefined;
 
   // Resolve against the edit-scope layer so the color matches what the user sees

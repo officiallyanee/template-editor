@@ -58,14 +58,14 @@ it("offers three independently previewable prominence strategies", () => {
 
 it("applies an explicit color request when its source precondition matches", () => {
   const result = runDemo(
-    "Change text color from #171717 to #005bab",
+    "Change text color from #005bab to #0075de",
     ["headline"],
     "all",
     "desktop",
     freshState(),
   );
   if (!result.ok) throw new Error();
-  expect(result.proposals[0].after).toEqual({ color: "#005bab" });
+  expect(result.proposals[0].after).toEqual({ color: "#0075de" });
   expect(result.proposals[0].metrics?.contrastAfter).toBeGreaterThanOrEqual(3);
 });
 
@@ -77,10 +77,102 @@ it("reports a source-color mismatch instead of proposing a change", () => {
     "desktop",
     freshState(),
   );
-  expect(result).toMatchObject({
-    ok: false,
-    error: { code: "SOURCE_MISMATCH" },
-  });
+  expect(result.ok).toBe(true);
+  if (!result.ok) throw new Error();
+  expect(result.proposals).toHaveLength(0);
+  expect(result.strategyGroups[0].outcomes).toEqual([
+    expect.objectContaining({
+      targetId: "headline",
+      status: "invalid",
+      detail: expect.stringContaining("currently #005bab"),
+    }),
+  ]);
+});
+
+it("returns one independent outcome per selected element in a mixed selection", () => {
+  const selectedIds = ["headline", "cta", "services"];
+  const result = runDemo(
+    "Make it bigger",
+    selectedIds,
+    "all",
+    "desktop",
+    freshState(),
+  );
+  if (!result.ok) throw new Error();
+  for (const group of result.strategyGroups) {
+    const representedIds = [
+      ...group.proposals.map((proposal) => proposal.command.targetIds[0]),
+      ...group.outcomes.map((outcome) => outcome.targetId),
+    ];
+    expect(representedIds.sort()).toEqual([...selectedIds].sort());
+  }
+  const typeScale = result.strategyGroups.find(
+    (group) => group.strategyId === "type-scale",
+  );
+  expect(typeScale?.proposals[0].command.targetIds).toEqual(["headline"]);
+  expect(typeScale?.outcomes).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ targetId: "cta", status: "unsupported" }),
+      expect.objectContaining({
+        targetId: "services",
+        status: "unsupported",
+      }),
+    ]),
+  );
+});
+
+it("does not let one source mismatch cancel a matching sibling", () => {
+  const result = runDemo(
+    "Change text color from #005bab to #0075de",
+    ["headline", "intro"],
+    "all",
+    "desktop",
+    freshState(),
+  );
+  if (!result.ok) throw new Error();
+  expect(result.proposals).toHaveLength(1);
+  expect(result.proposals[0].command.targetIds).toEqual(["headline"]);
+  expect(result.strategyGroups[0].outcomes).toEqual([
+    expect.objectContaining({ targetId: "intro", status: "invalid" }),
+  ]);
+});
+
+it("records no-op outcomes instead of creating empty proposals", () => {
+  const state = freshState();
+  state.elements.headline.base.fontWeight = 800;
+  const result = runDemo(
+    "Make it more prominent",
+    ["headline"],
+    "all",
+    "desktop",
+    state,
+  );
+  if (!result.ok) throw new Error();
+  const typography = result.strategyGroups.find(
+    (group) => group.strategyId === "typography-hierarchy",
+  );
+  expect(typography?.proposals).toHaveLength(0);
+  expect(typography?.outcomes).toEqual([
+    expect.objectContaining({ targetId: "headline", status: "no-op" }),
+  ]);
+});
+
+it("captures the original selection on every proposal", () => {
+  const result = runDemo(
+    "Make selected items compact",
+    ["headline", "intro"],
+    "all",
+    "desktop",
+    freshState(),
+  );
+  if (!result.ok) throw new Error();
+  expect(
+    result.proposals.every(
+      (proposal) =>
+        JSON.stringify(proposal.selectionSnapshot) ===
+        JSON.stringify(["headline", "intro"]),
+    ),
+  ).toBe(true);
 });
 
 it("requires color disambiguation for elements with foreground and background", () => {
@@ -91,10 +183,16 @@ it("requires color disambiguation for elements with foreground and background", 
     "desktop",
     freshState(),
   );
-  expect(result).toMatchObject({
-    ok: false,
-    error: { code: "AMBIGUOUS_COLOR" },
-  });
+  expect(result.ok).toBe(true);
+  if (!result.ok) throw new Error();
+  expect(result.proposals).toHaveLength(0);
+  expect(result.strategyGroups[0].outcomes).toEqual([
+    expect.objectContaining({
+      targetId: "cta",
+      status: "invalid",
+      detail: expect.stringContaining("Specify which one to change"),
+    }),
+  ]);
 });
 
 it("allows an explicit user color that would fail contrast — shows warning, does not block", () => {
@@ -102,7 +200,7 @@ it("allows an explicit user color that would fail contrast — shows warning, do
   // CONTRAST_FAILURE when the chosen color dipped below WCAG threshold.
   // User-chosen colors are intentional — they should pass through with metrics set.
   const result = runDemo(
-    "Change text color from #171717 to #999999",
+    "Change text color from #005bab to #999999",
     ["headline"],
     "all",
     "desktop",
@@ -343,4 +441,35 @@ it("spatial-scale produces proposals for container elements", () => {
     expect(p.after.fontSize).toBeUndefined();
     expect(p.after.padding ?? p.after.gap).toBeDefined();
   }
+});
+
+it("creates deterministic position proposals only for selected children", () => {
+  const state = freshState();
+  const result = runDemo(
+    "Move this to the end",
+    ["headline", "page"],
+    "mobile",
+    "mobile",
+    state,
+  );
+  if (!result.ok) throw new Error();
+
+  expect(result.strategyGroups).toHaveLength(1);
+  const group = result.strategyGroups[0];
+  expect(group.strategyId).toBe("cross-axis-position");
+  expect(group.proposals).toHaveLength(1);
+  expect(group.proposals[0].command.targetIds).toEqual(["headline"]);
+  expect(group.proposals[0].after).toEqual({ alignSelf: "end" });
+  expect(group.outcomes).toEqual([
+    expect.objectContaining({ targetId: "page", status: "unsupported" }),
+  ]);
+
+  const accepted = dispatchCommand(state, group.proposals[0].command, {
+    selectedIds: group.proposals[0].selectionSnapshot,
+    requestedScope: "mobile",
+  });
+  if (!accepted.ok) throw new Error(accepted.error.detail);
+  expect(accepted.state.elements.headline.base.alignSelf).toBeUndefined();
+  expect(accepted.state.elements.headline.overrides.mobile?.alignSelf).toBe("end");
+  expect(accepted.state.elements.intro.overrides.mobile?.alignSelf).toBeUndefined();
 });
