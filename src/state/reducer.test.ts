@@ -104,3 +104,124 @@ it("shares command metadata across multi-element revision entries", () => {
   expect(headline?.templateVersion).toBe(intro?.templateVersion);
   expect(headline?.committedAt).toBe(intro?.committedAt);
 });
+
+it("code editor dispatches from a mobile-scoped override without promoting base values", () => {
+  const state = freshState();
+  const mobileResolved = resolved(state.elements.headline, "mobile");
+  const edited = { ...mobileResolved, fontSize: 28 };
+  const parsed = parseAndDiff(
+    JSON.stringify(edited),
+    state.elements.headline,
+    "mobile",
+    "mobile",
+    state,
+  );
+  expect(parsed.ok).toBe(true);
+  if (!parsed.ok) throw new Error();
+  expect(parsed.command.viewportScope).toBe("mobile");
+  expect(parsed.command.changes.headline).toEqual({
+    op: "set",
+    values: { fontSize: 28 },
+  });
+
+  const result = dispatchCommand(state, parsed.command);
+  if (!result.ok) throw new Error();
+  expect(result.state.elements.headline.overrides.mobile?.fontSize).toBe(28);
+  expect(result.state.elements.headline.base.fontSize).toBe(54);
+  expect(resolved(result.state.elements.headline, "desktop").fontSize).toBe(54);
+});
+
+it("tablet viewport edits are isolated from desktop and mobile", () => {
+  const state = freshState();
+  const result = dispatchCommand(
+    state,
+    command(state, "headline", { fontSize: 42 }, "tablet"),
+  );
+  if (!result.ok) throw new Error();
+  expect(
+    result.state.elements.headline.overrides.tablet?.fontSize,
+  ).toBe(42);
+  expect(resolved(result.state.elements.headline, "desktop").fontSize).toBe(54);
+  expect(resolved(result.state.elements.headline, "mobile").fontSize).toBe(35);
+});
+
+it("rejects a command with a non-existent target as UNKNOWN_TARGET", () => {
+  const state = freshState();
+  const result = dispatchCommand(state, {
+    commandId: "bad-target",
+    source: "canvas",
+    targetIds: ["nonexistent-element"],
+    viewportScope: "all",
+    baseRevision: state.version,
+    changes: {
+      "nonexistent-element": { op: "set", values: { fontSize: 20 } },
+    },
+  });
+  expect(result.ok).toBe(false);
+  if (!result.ok) expect(result.error.code).toBe("UNKNOWN_TARGET");
+  expect(state.version).toBe(1);
+});
+
+it("rejects out-of-range field values as INVALID_FIELD", () => {
+  const state = freshState();
+  const negativeWidth = dispatchCommand(
+    state,
+    command(state, "cta", { width: -10 }),
+  );
+  expect(negativeWidth.ok).toBe(false);
+  if (!negativeWidth.ok) expect(negativeWidth.error.code).toBe("INVALID_FIELD");
+
+  const hugeFont = dispatchCommand(
+    state,
+    command(state, "headline", { fontSize: 200 }),
+  );
+  expect(hugeFont.ok).toBe(false);
+  if (!hugeFont.ok) expect(hugeFont.error.code).toBe("INVALID_FIELD");
+
+  expect(state.version).toBe(1);
+});
+
+it("code editor returns a friendly error for malformed JSON", () => {
+  const state = freshState();
+  const broken = parseAndDiff(
+    '{ "fontSize": 54, }',
+    state.elements.headline,
+    "desktop",
+    "all",
+    state,
+  );
+  expect(broken.ok).toBe(false);
+  if (!broken.ok) expect(broken.error).toContain("valid JSON");
+
+  const garbage = parseAndDiff(
+    "not json at all",
+    state.elements.headline,
+    "desktop",
+    "all",
+    state,
+  );
+  expect(garbage.ok).toBe(false);
+  if (!garbage.ok) expect(garbage.error).toContain("valid JSON");
+});
+
+it("code editor rejects schema-invalid values with a descriptive error", () => {
+  const state = freshState();
+  const badSchema = parseAndDiff(
+    JSON.stringify({ ...resolved(state.elements.headline, "desktop"), fontSize: 5 }),
+    state.elements.headline,
+    "desktop",
+    "all",
+    state,
+  );
+  expect(badSchema.ok).toBe(false);
+  if (!badSchema.ok) expect(badSchema.error.length).toBeGreaterThan(0);
+
+  const unknownField = parseAndDiff(
+    JSON.stringify({ ...resolved(state.elements.headline, "desktop"), zIndex: 10 }),
+    state.elements.headline,
+    "desktop",
+    "all",
+    state,
+  );
+  expect(unknownField.ok).toBe(false);
+});

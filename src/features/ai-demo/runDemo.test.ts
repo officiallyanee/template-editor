@@ -139,7 +139,7 @@ it("does not let one source mismatch cancel a matching sibling", () => {
 
 it("records no-op outcomes instead of creating empty proposals", () => {
   const state = freshState();
-  state.elements.headline.base.fontWeight = 800;
+  state.elements.headline.base.fontWeight = 900;
   const result = runDemo(
     "Make it more prominent",
     ["headline"],
@@ -196,9 +196,6 @@ it("requires color disambiguation for elements with foreground and background", 
 });
 
 it("allows an explicit user color that would fail contrast — shows warning, does not block", () => {
-  // Regression: explicit 'Change text color from X to Y' used to be blocked by
-  // CONTRAST_FAILURE when the chosen color dipped below WCAG threshold.
-  // User-chosen colors are intentional — they should pass through with metrics set.
   const result = runDemo(
     "Change text color from #005bab to #999999",
     ["headline"],
@@ -210,7 +207,6 @@ it("allows an explicit user color that would fail contrast — shows warning, do
   if (!result.ok) throw new Error();
   const proposal = result.proposals[0];
   expect(proposal.after).toEqual({ color: "#999999" });
-  // Metrics are still computed so the ProposalCard can display the warning
   expect(proposal.metrics).toBeDefined();
   if (proposal.metrics) {
     expect(
@@ -337,7 +333,6 @@ it("generates element-aware friendly copy variants", () => {
 });
 
 it("offers distinct negation strategies for 'make it smaller'", () => {
-  // Regression: 'make it smaller' had no corresponding negation strategies.
   const headlineResult = runDemo(
     "Make it smaller",
     ["headline"],
@@ -350,14 +345,12 @@ it("offers distinct negation strategies for 'make it smaller'", () => {
     "type-scale-down",
     "weight-reduce",
   ]);
-  // Type scale down reduces fontSize
   expect(headlineResult.proposals[0].after.fontSize).toBeLessThan(
     freshState().elements.headline.base.fontSize ?? 0,
   );
 });
 
 it("offers three negation strategies for 'make it less prominent'", () => {
-  // Regression: 'less prominent' had no matching strategies.
   const result = runDemo(
     "Make it less prominent",
     ["headline"],
@@ -384,7 +377,6 @@ it("shrink strategies reduce values below original", () => {
     state,
   );
   if (!result.ok) throw new Error();
-  // type-scale-down: fontSize should decrease
   const typeDown = result.strategyGroups.find(
     (g) => g.strategyId === "type-scale-down",
   );
@@ -393,7 +385,6 @@ it("shrink strategies reduce values below original", () => {
     const p = typeDown.proposals[0];
     expect(p.after.fontSize ?? 0).toBeLessThan(base.fontSize ?? 0);
   }
-  // weight-reduce: fontWeight should decrease
   const weightDown = result.strategyGroups.find(
     (g) => g.strategyId === "weight-reduce",
   );
@@ -405,8 +396,6 @@ it("shrink strategies reduce values below original", () => {
 });
 
 it("spatial-scale does not produce proposals for text elements", () => {
-  // Regression: spatial-scale was incorrectly producing fontSize changes for text elements
-  // making it indistinguishable from type-scale. Now it should return null for heading/paragraph.
   const result = runDemo(
     "Make it bigger",
     ["headline"],
@@ -418,7 +407,6 @@ it("spatial-scale does not produce proposals for text elements", () => {
   const spatialGroup = result.strategyGroups.find(
     (g) => g.strategyId === "spatial-scale",
   );
-  // spatial-scale should produce NO proposals for text elements (only containers/buttons)
   expect(spatialGroup).toBeUndefined();
 });
 
@@ -437,7 +425,6 @@ it("spatial-scale produces proposals for container elements", () => {
   expect(spatialGroup).toBeDefined();
   if (spatialGroup) {
     const p = spatialGroup.proposals[0];
-    // Should change padding and/or gap, not fontSize
     expect(p.after.fontSize).toBeUndefined();
     expect(p.after.padding ?? p.after.gap).toBeDefined();
   }

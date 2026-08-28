@@ -151,3 +151,70 @@ it("does not create a version for an exact no-op command", () => {
   expect(result.state).toBe(state);
   expect(result.state.version).toBe(state.version);
 });
+
+it("restores from an AI-accepted revision without special-casing the source", () => {
+  let state = freshState();
+  const aiResult = dispatchCommand(state, {
+    commandId: "ai-prominence",
+    source: "ai",
+    targetIds: ["headline"],
+    viewportScope: "all",
+    baseRevision: state.version,
+    changes: { headline: { op: "set", values: { fontWeight: 800 } } },
+    meta: { strategyId: "typography-hierarchy" },
+  }, { selectedIds: ["headline"], requestedScope: "all" });
+  if (!aiResult.ok) throw new Error();
+  state = aiResult.state;
+  const aiEntry = state.elements.headline.history.at(-1)!;
+  expect(aiEntry.source).toBe("ai");
+  expect(aiEntry.intent).toEqual({
+    kind: "ai-strategy",
+    strategyId: "typography-hierarchy",
+  });
+
+  const manual = dispatchCommand(
+    state,
+    command(state, "headline", { fontWeight: 400 }),
+  );
+  if (!manual.ok) throw new Error();
+  state = manual.state;
+
+  const restored = dispatchCommand(
+    state,
+    restoreCommand(state, "headline", aiEntry),
+  );
+  if (!restored.ok) throw new Error();
+  expect(restored.state.elements.headline.base.fontWeight).toBe(800);
+  expect(restored.state.elements.headline.history.at(-1)?.source).toBe(
+    "restore",
+  );
+  expect(restored.state.elements.headline.history.at(-1)?.intent).toEqual({
+    kind: "restore",
+    restoredFromRevisionId: aiEntry.revisionId,
+  });
+});
+
+it("applies a multi-element canvas command atomically", () => {
+  const state = freshState();
+  const result = dispatchCommand(state, {
+    commandId: "multi-canvas",
+    source: "canvas",
+    targetIds: ["headline", "intro", "cta"],
+    viewportScope: "all",
+    baseRevision: state.version,
+    changes: {
+      headline: { op: "set", values: { fontWeight: 800 } },
+      intro: { op: "set", values: { fontSize: 20 } },
+      cta: { op: "set", values: { width: 200 } },
+    },
+  });
+  if (!result.ok) throw new Error();
+  expect(result.state.version).toBe(2);
+  expect(result.state.elements.headline.base.fontWeight).toBe(800);
+  expect(result.state.elements.intro.base.fontSize).toBe(20);
+  expect(result.state.elements.cta.base.width).toBe(200);
+  const ids = ["headline", "intro", "cta"].map(
+    (id) => result.state.elements[id].history.at(-1)?.commandId,
+  );
+  expect(new Set(ids)).toEqual(new Set(["multi-canvas"]));
+});

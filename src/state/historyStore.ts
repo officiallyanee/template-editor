@@ -13,9 +13,6 @@ export function historyForScope(
   if (filtered.length === 0) return [];
 
   const firstRev = filtered[0];
-  // Only synthesise the baseline entry when the first revision has a valid
-  // beforeLayer snapshot. Stale saves (written before this field existed)
-  // are stripped by migrate() in localStorage.ts, but we guard here too.
   if (!firstRev.beforeLayer?.kind) return [...filtered].reverse();
 
   const initialEntry: RevisionEntry = {

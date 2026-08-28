@@ -6,7 +6,6 @@ import { resolved } from "../../state/resolver";
 import { ProposalReview } from "./ProposalReview";
 import { runDemo } from "./runDemo";
 
-// Prompt chips grouped as paired action/negation. Each pair shares a label root.
 const PROMPT_PAIRS: Array<{ action: string; negation: string }> = [
   { action: "Make it more prominent", negation: "Make it less prominent" },
   { action: "Make it bigger", negation: "Make it smaller" },
@@ -20,13 +19,10 @@ const PROMPT_PAIRS: Array<{ action: string; negation: string }> = [
 export function AiDemoPanel() {
   const { state, actions } = useEditor();
 
-  // Derive the current element's color properties from the active edit-scope layer
   const selectedElement = state.activeId
     ? state.template.elements[state.activeId]
     : undefined;
 
-  // Resolve against the edit-scope layer so the color matches what the user sees
-  // in the Inspector (base for "all views", viewport-resolved for specific scopes)
   const scopedProps = selectedElement
     ? state.editScope === "all"
       ? selectedElement.base
@@ -39,7 +35,6 @@ export function AiDemoPanel() {
   const canEditBackgroundColor = currentBgColor != null;
   const hasBothColors = canEditTextColor && canEditBackgroundColor;
 
-  // Color prompt state — pre-populated from element, user can override target
   const [colorField, setColorField] = useState<"text" | "background">("text");
   const [targetColor, setTargetColor] = useState("#005bab");
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -102,7 +97,6 @@ export function AiDemoPanel() {
         />
       </label>
 
-      {/* Prompt chips — action/negation pairs */}
       <div className="flex flex-col gap-1.5" aria-label="Example instructions">
         {PROMPT_PAIRS.map(({ action, negation }) => (
           <div key={action} className="flex gap-1.5">
@@ -130,7 +124,6 @@ export function AiDemoPanel() {
           </div>
         ))}
 
-        {/* Color change prompt — inline picker */}
         <div>
           <button
             className={`flex w-full cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-2 text-left text-xs transition-colors duration-150 hover:bg-surface-hover ${showColorPicker ? "border-primary bg-selection text-primary" : "border-border-default bg-raised text-secondary"}`}
@@ -143,7 +136,6 @@ export function AiDemoPanel() {
         </div>
       </div>
 
-      {/* Inline color prompt builder */}
       {showColorPicker && (
         <div className="flex flex-col gap-3 rounded-xl border border-border-default bg-canvas-soft p-3">
           {hasBothColors && (

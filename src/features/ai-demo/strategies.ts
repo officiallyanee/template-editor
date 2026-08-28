@@ -26,7 +26,7 @@ export function prominentStrategies(): StrategySpec[] {
       valuesFor: (element, current) =>
         element.type === "container"
           ? null
-          : { fontWeight: Math.min((current.fontWeight ?? 400) + 100, 800) },
+          : { fontWeight: Math.min((current.fontWeight ?? 400) + 100, 900) },
     },
     {
       strategyId: "accessible-contrast",
@@ -63,7 +63,6 @@ export function prominentStrategies(): StrategySpec[] {
   ];
 }
 
-/** Negation of prominentStrategies — reduces weight, restores neutral color, trims space. */
 export function softenStrategies(): StrategySpec[] {
   return [
     {
@@ -133,7 +132,7 @@ export function sizingStrategies(): StrategySpec[] {
       valuesFor: (element, current) =>
         element.type === "container"
           ? null
-          : { fontWeight: Math.min((current.fontWeight ?? 400) + 100, 800) },
+          : { fontWeight: Math.min((current.fontWeight ?? 400) + 100, 900) },
     },
     {
       strategyId: "spatial-scale",
@@ -156,7 +155,6 @@ export function sizingStrategies(): StrategySpec[] {
   ];
 }
 
-/** Negation of sizingStrategies — reduces font size, weight, and spatial dimensions. */
 export function shrinkStrategies(): StrategySpec[] {
   return [
     {

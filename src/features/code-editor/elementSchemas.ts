@@ -10,7 +10,7 @@ const base = z
     color: color.optional(),
     backgroundColor: color.optional(),
     fontSize: z.number().min(10).max(96).optional(),
-    fontWeight: z.number().min(300).max(800).optional(),
+    fontWeight: z.number().min(300).max(900).optional(),
     align: z.enum(["left", "center", "right"]).optional(),
     width: z.number().min(40).max(1440).optional(),
     height: z.number().min(24).max(900).optional(),

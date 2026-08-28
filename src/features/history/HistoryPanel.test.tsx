@@ -36,13 +36,11 @@ it("allows restoring back to initial baseline after a single edit", async () => 
   await user.click(screen.getByRole("button", { name: "Increase text size" }));
   await user.click(screen.getByRole("tab", { name: "History" }));
 
-  // Should have Current edit and Initial version
   expect(screen.getByText("Initial version")).toBeInTheDocument();
   const restoreBtn = screen.getByRole("button", { name: "Restore" });
   expect(restoreBtn).not.toBeDisabled();
 
   await user.click(restoreBtn);
 
-  // After restore, initial baseline becomes Current
   expect(screen.getByText("Restored revision")).toBeInTheDocument();
 });

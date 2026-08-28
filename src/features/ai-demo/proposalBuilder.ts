@@ -75,9 +75,6 @@ export function buildProposal(
     current,
     changedValues,
   );
-  // Block on contrast failure for AI-originated strategies only.
-  // Explicit user color requests (strategyId "explicit-color-change") are intentional
-  // choices by the user — display the contrast metrics as a warning but do not reject.
   const isExplicitUserChoice = strategyId === "explicit-color-change";
   if (
     !isExplicitUserChoice &&

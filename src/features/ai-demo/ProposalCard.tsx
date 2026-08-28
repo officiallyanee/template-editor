@@ -71,10 +71,8 @@ export function ProposalCard({ item }: { item: PendingProposal }) {
   };
   const preview = () => {
     if (isPreviewing) {
-      // Stopping preview: restore the viewport we switched away from (if any)
       actions.stopPreviewProposal(item.id, item.command.viewportScope);
     } else {
-      // Starting preview: switch viewport if proposal targets a specific one
       actions.startPreviewProposal(item.id, item.command.viewportScope);
     }
   };

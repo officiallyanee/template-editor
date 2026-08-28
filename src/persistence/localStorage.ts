@@ -12,12 +12,6 @@ const templateKey = (templateId: string) =>
 const checkpointsKey = (templateId: string) =>
   `${CHECKPOINTS_KEY_PREFIX}${templateId}`;
 
-/**
- * Migrate a parsed TemplateState from localStorage.
- * Strips RevisionEntry items that are missing beforeLayer or afterLayer
- * (written before those fields were introduced) so historyStore never
- * receives undefined layer snapshots.
- */
 function migrate(state: TemplateState): TemplateState {
   const elements = Object.fromEntries(
     Object.entries(state.elements).map(([id, el]) => [

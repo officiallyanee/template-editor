@@ -7,10 +7,6 @@ function element(
   return { ...input, overrides: input.overrides ?? {}, history: [] };
 }
 
-/**
- * A compact product-status page that stresses responsive container direction,
- * mixed child types, sizing, alignment, and viewport overrides.
- */
 export const dashboardTemplate: TemplateState = {
   templateId: "launch-dashboard",
   version: 1,
