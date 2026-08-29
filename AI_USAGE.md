@@ -7,7 +7,6 @@
 - **Vercel Labs `web-design-guidelines` skill:** installed from the third-party `vercel-labs/agent-skills` package and used to review accessibility,keyboard use, focus, forms, motion, visual hierarchy, and responsive layouts.
 - **Vercel Labs `vercel-composition-patterns` skill:** installed from the same third-party package and used to keep shared React components understandable as the preview gained more modes.
 
-
 ## Redacted examples
 
 ### Planning and product framing
