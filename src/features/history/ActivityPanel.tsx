@@ -46,29 +46,18 @@ export function ActivityPanel({
   return (
     <div className="flex flex-col gap-4">
       <div className="border-b border-border-default pb-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h2 className="text-lg font-bold text-balance">Saved Versions</h2>
-            <p className="mt-1 text-xs leading-normal text-ink-muted">
-              Each save stores the exact document layers. Previewing never
-              changes the live template.
-            </p>
-          </div>
-          <Button
-            className="shrink-0"
-            disabled={!state.hasUnsavedVersion}
-            onClick={actions.saveVersion}
-          >
-            <Save size={14} aria-hidden="true" />
-            Save Version
-          </Button>
-        </div>
+        <h2 className="text-lg font-bold text-balance">Saved Versions</h2>
+        <p className="mt-1 text-xs leading-normal text-ink-muted">
+          Each save is a whole-document checkpoint. Its entries remain
+          element-wise so individual changes can still be reviewed and
+          recovered without rolling back siblings.
+        </p>
       </div>
       {previewed && restorePlan && (
         <section
           aria-label={`Restore preview for saved version ${previewed.toTemplateVersion}`}
           aria-live="polite"
-          className="rounded-xl border border-primary bg-selection-fill p-3"
+          className="rounded-xl border border-primary bg-selection p-3"
         >
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -112,7 +101,7 @@ export function ActivityPanel({
                   : "s"}
                 .
               </p>
-              <ul className="mt-2 max-h-32 list-none space-y-1 overflow-auto p-0 text-[11px] text-ink-muted">
+              <ul className="mt-2 max-h-32 list-none space-y-1 overflow-auto p-0 text-xs text-ink-muted">
                 {restorePlan.changes.map((change) => (
                   <li
                     className="break-words"
@@ -146,18 +135,18 @@ export function ActivityPanel({
           )}
         </section>
       )}
-      <ol className="m-0 flex list-none flex-col gap-2 p-0">
+      <ol className="m-0 flex list-none flex-col gap-5 p-0">
         {checkpoints.map((checkpoint) => (
           <li
             key={checkpoint.checkpointId}
-            className="rounded-lg border border-border-default bg-raised p-3"
+            className="border border-border-default border-l-4 border-l-primary bg-raised p-3 shadow-flat"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <strong className="block text-sm">
                   Saved Version {checkpoint.toTemplateVersion}
                 </strong>
-                <small className="mt-1 block text-[11px] text-ink-muted tabular-nums">
+                <small className="mt-1 block text-xs text-ink-muted tabular-nums">
                   {checkpoint.reason === "manual"
                     ? "Saved manually"
                     : checkpoint.reason === "global-restore"
@@ -166,7 +155,7 @@ export function ActivityPanel({
                   · {timeFormat.format(checkpoint.savedAt)}
                 </small>
               </div>
-              <span className="shrink-0 rounded-full bg-canvas-soft px-2 py-1 text-[10px] font-bold text-ink-muted">
+              <span className="shrink-0 rounded-full bg-canvas-soft px-2 py-1 text-xs font-bold text-ink-muted">
                 {checkpoint.commandCount} edit
                 {checkpoint.commandCount === 1 ? "" : "s"}
               </span>
@@ -198,12 +187,12 @@ export function ActivityPanel({
                       <strong className="block truncate text-xs">
                         {element?.label ?? entry.elementId}
                       </strong>
-                      <small className="mt-0.5 block truncate text-[10px] text-ink-muted">
+                      <small className="mt-0.5 block truncate text-xs text-ink-muted">
                         {entry.fields.join(", ")}
                       </small>
                     </span>
                     <Button
-                      className="shrink-0 px-2 py-1.5 text-[11px]"
+                      className="shrink-0 px-2 py-1.5 text-xs"
                       onClick={() => {
                         actions.select(entry.elementId);
                         onOpenHistory();

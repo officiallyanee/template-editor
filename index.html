@@ -6,13 +6,8 @@
     <meta name="theme-color" content="#ffffff" />
     <script>
       (() => {
-        const saved = localStorage.getItem("scope-ui-theme");
-        const theme =
-          saved === "light" || saved === "dark"
-            ? saved
-            : matchMedia("(prefers-color-scheme: dark)").matches
-              ? "dark"
-              : "light";
+        const saved = localStorage.getItem("scope-ui-theme:v2");
+        const theme = saved === "light" || saved === "dark" ? saved : "light";
         const savedLayers = localStorage.getItem("scope-layers-panel");
         document.documentElement.dataset.theme = theme;
         document.documentElement.dataset.layers =

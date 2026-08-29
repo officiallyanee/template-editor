@@ -36,7 +36,7 @@ export function ReorderControl({ elementId }: { elementId: string }) {
 
   return (
     <fieldset className="m-0 rounded-lg border border-hairline bg-canvas-soft p-3">
-      <legend className="px-1 text-[11px] font-semibold tracking-[.04em] text-ink-muted uppercase">
+      <legend className="px-1 text-xs font-semibold tracking-[.04em] text-ink-muted uppercase">
         Sibling Order
       </legend>
       <div className="mt-1 grid grid-cols-2 gap-2">
@@ -55,7 +55,7 @@ export function ReorderControl({ elementId }: { elementId: string }) {
           Move Later
         </Button>
       </div>
-      <p className="mt-2 text-[11px] leading-normal text-ink-muted">
+      <p className="mt-2 text-xs leading-normal text-ink-muted">
         {disabledReason ?? "Moves within the current parent across all views."}
       </p>
     </fieldset>

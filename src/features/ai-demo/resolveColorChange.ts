@@ -1,8 +1,5 @@
 import { EDITABLE_FIELDS } from "../../state/allowedFields";
-import type {
-  ElementProperties,
-  TemplateElement,
-} from "../../state/types";
+import type { ElementProperties, TemplateElement } from "../../state/types";
 import type { ColorField } from "./promptParser";
 
 export function explicitColorValues(

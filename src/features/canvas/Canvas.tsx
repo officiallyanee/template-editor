@@ -1,4 +1,4 @@
-import { Maximize2 } from "lucide-react";
+import { Maximize2, Monitor } from "lucide-react";
 import type { KeyboardEvent, MouseEvent } from "react";
 import { useEditorUi } from "../../app/EditorUiContext";
 import { Button } from "../../components/Button";
@@ -8,8 +8,9 @@ import { materializeSnapshot } from "../../state/globalRestore";
 import { useEditor } from "../../state/StateContext";
 import type { TemplateElement } from "../../state/types";
 import { CanvasElement, PreviewElement } from "./CanvasElement";
+import { DeviceFrame } from "../preview/DeviceFrame";
+import { PREVIEW_DIMENSIONS } from "../preview/previewDimensions";
 
-const widths = { desktop: 920, tablet: 680, mobile: 375 };
 type CanvasMode = "editable" | "presentation";
 
 function TemplateDocument({ mode }: { mode: CanvasMode }) {
@@ -42,9 +43,8 @@ function TemplateDocument({ mode }: { mode: CanvasMode }) {
     state.viewport,
     previewProposal,
   );
+  const dimensions = PREVIEW_DIMENSIONS[state.viewport];
   const editable = mode === "editable" && !restoreCheckpoint;
-  const presentationWidth =
-    state.viewport === "desktop" ? "none" : widths[state.viewport];
   const select = (event: MouseEvent | KeyboardEvent, id: string) => {
     event.stopPropagation();
     actions.select(
@@ -56,9 +56,9 @@ function TemplateDocument({ mode }: { mode: CanvasMode }) {
 
   return (
     <div
-      className={`preview flex w-full flex-col items-center justify-center overflow-hidden rounded-xl shadow-flat transition-[max-width] duration-200 ${editable ? (state.viewport === "mobile" ? "min-h-[690px]" : "min-h-[650px]") : "min-h-full"}`}
+      className="preview flex w-full flex-col items-center justify-center overflow-hidden shadow-flat"
       style={{
-        maxWidth: editable ? widths[state.viewport] : presentationWidth,
+        minHeight: dimensions.minHeight,
         backgroundColor: pageProps.backgroundColor,
         padding: pageProps.padding,
         gap: pageProps.gap,
@@ -138,7 +138,7 @@ function TemplateDocument({ mode }: { mode: CanvasMode }) {
 
 export function Canvas() {
   const { state } = useEditor();
-  const { actions, meta } = useEditorUi();
+  const { state: uiState, actions, meta } = useEditorUi();
   const previewProposal = findProposal(
     state.strategyGroups,
     state.previewProposalId,
@@ -149,9 +149,9 @@ export function Canvas() {
   return (
     <main
       id="main-content"
-      className="min-w-0 overflow-auto bg-workspace p-5 max-sm:p-3"
+      className="min-h-0 min-w-0 overflow-auto bg-workspace p-5 max-sm:p-3"
     >
-      <div className="mx-auto mb-2.5 flex max-w-[920px] items-center justify-between gap-3 text-[11px] font-semibold tracking-[.06em] text-ink-muted uppercase">
+      <div className="mx-auto mb-2.5 flex max-w-[920px] items-center justify-between gap-3 text-xs font-semibold tracking-[.06em] text-ink-muted uppercase">
         <span className="min-w-0 truncate">
           {restorePreview
             ? `Saved Version ${restorePreview.toTemplateVersion} Preview · Not Applied`
@@ -160,28 +160,43 @@ export function Canvas() {
               : "Live Preview"}
         </span>
         <span className="ml-auto shrink-0">
-          {widths[state.viewport]} px · {state.viewport}
+          {PREVIEW_DIMENSIONS[state.viewport].width} ×{" "}
+          {PREVIEW_DIMENSIONS[state.viewport].minHeight} px · {state.viewport}
         </span>
         <Button
+          className="shrink-0 px-2 py-1.5 text-xs normal-case tracking-normal"
+          aria-label={`${uiState.deviceFrame === "on" ? "Hide" : "Show"} Device Frame`}
+          title={`${uiState.deviceFrame === "on" ? "Hide" : "Show"} Device Frame`}
+          onClick={actions.toggleDeviceFrame}
+        >
+          <Monitor size={13} aria-hidden="true" />
+          <span className="max-xl:sr-only">Frame</span>
+        </Button>
+        <Button
           id={meta.fullscreenTriggerId}
-          className="shrink-0 px-2 py-1.5 text-[11px] normal-case tracking-normal"
+          className="shrink-0 px-2 py-1.5 text-xs normal-case tracking-normal"
           onClick={actions.enterFullscreenPreview}
         >
           <Maximize2 size={13} aria-hidden="true" />
           <span className="max-sm:sr-only">Full Screen Preview</span>
         </Button>
       </div>
-      <div className="flex min-h-[calc(100%-28px)] items-center justify-center py-2">
-        <TemplateDocument mode="editable" />
+      <div className="flex min-h-[calc(100%-28px)] w-full items-center justify-center py-6">
+        <DeviceFrame viewport={state.viewport}>
+          <TemplateDocument mode="editable" />
+        </DeviceFrame>
       </div>
     </main>
   );
 }
 
 export function FullscreenCanvas() {
+  const { state } = useEditor();
   return (
-    <div className="flex h-full w-full justify-center">
-      <TemplateDocument mode="presentation" />
+    <div className="flex min-h-full w-full items-center justify-center">
+      <DeviceFrame viewport={state.viewport}>
+        <TemplateDocument mode="presentation" />
+      </DeviceFrame>
     </div>
   );
 }

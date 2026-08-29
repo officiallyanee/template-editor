@@ -161,7 +161,12 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     () => ({
       dispatch,
       setViewport: (viewport) => setState((s) => ({ ...s, viewport })),
-      setEditScope: (editScope) => setState((s) => ({ ...s, editScope })),
+      setEditScope: (editScope) =>
+        setState((s) => ({
+          ...s,
+          editScope,
+          viewport: editScope === "all" ? s.viewport : editScope,
+        })),
       select: (id, additive = false) =>
         setState((s) => {
           if (!additive) return { ...s, selectedIds: [id], activeId: id };

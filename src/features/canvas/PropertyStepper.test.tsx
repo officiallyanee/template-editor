@@ -15,7 +15,7 @@ describe("PropertyStepper", () => {
         step={4}
         overrideLabel="Mobile override"
         onChange={vi.fn()}
-      />
+      />,
     );
     expect(screen.getByText("Padding")).toBeInTheDocument();
     expect(screen.getByText("24 px")).toBeInTheDocument();
@@ -33,7 +33,7 @@ describe("PropertyStepper", () => {
         max={30}
         step={5}
         onChange={handleChange}
-      />
+      />,
     );
 
     await user.click(screen.getByRole("button", { name: "Decrease size" }));
@@ -50,9 +50,11 @@ describe("PropertyStepper", () => {
         max={30}
         step={5}
         onChange={handleChange}
-      />
+      />,
     );
-    expect(screen.getByRole("button", { name: "Decrease size" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Decrease size" }),
+    ).toBeDisabled();
 
     rerender(
       <PropertyStepper
@@ -62,8 +64,10 @@ describe("PropertyStepper", () => {
         max={30}
         step={5}
         onChange={handleChange}
-      />
+      />,
     );
-    expect(screen.getByRole("button", { name: "Increase size" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Increase size" }),
+    ).toBeDisabled();
   });
 });

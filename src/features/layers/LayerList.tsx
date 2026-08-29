@@ -40,20 +40,23 @@ export function LayerList() {
   return (
     <aside
       id="layer-rail"
-      className={`flex min-h-0 flex-col overflow-hidden border-r border-border-default py-5 max-lg:hidden ${expanded ? "px-3.5" : "items-center px-2"}`}
+      className={`flex min-h-0 flex-col overflow-hidden border-r border-border-default max-lg:hidden ${expanded ? "" : "items-center"}`}
       aria-label="Template layers"
     >
+      {/* ── Panel header ── */}
       <div
-        className={`flex w-full items-start gap-2 px-1 ${expanded ? "justify-between pb-4.5" : "justify-center"}`}
+        className={`flex shrink-0 items-start gap-2 border-b border-border-default py-3 ${
+          expanded ? "px-3" : "justify-center px-2"
+        }`}
       >
         {expanded && (
-          <div id="layer-list-heading" className="min-w-0">
-            <label className="mb-2 block">
+          <div id="layer-list-heading" className="min-w-0 flex-1">
+            <label className="block">
               <span className="sr-only">Template</span>
               <select
                 aria-label="Template"
                 name="template"
-                className="w-full min-w-0 rounded-lg border border-hairline bg-raised py-1.5 pr-7 pl-2 text-[11px] font-bold tracking-[.06em] text-primary uppercase"
+                className="w-full min-w-0 rounded border border-hairline bg-raised py-1 pr-7 pl-2 text-xs font-bold tracking-[.06em] text-primary uppercase"
                 value={state.template.templateId}
                 onChange={(event) => {
                   const nextId = event.target.value;
@@ -67,15 +70,16 @@ export function LayerList() {
                   </option>
                 ))}
               </select>
-              <span className="mt-1 block truncate text-[10px] font-medium tracking-normal text-ink-muted normal-case">
-                {activeTemplate?.description ?? "Template document"}
-              </span>
             </label>
-            <h2 className="mb-1.5 text-xl font-bold tracking-[-.2px] text-balance">
+            <span className="mt-0.5 block truncate text-xs text-ink-faint">
+              {activeTemplate?.description ?? "Template document"}
+            </span>
+            <h2 className="mt-3 text-lg font-bold tracking-[-0.3px] leading-tight">
               Page Layers
             </h2>
-            <p className="m-0 text-xs leading-normal text-ink-muted">
-              Choose an element. Hold Shift to add more.
+            <p className="mt-0.5 text-xs leading-normal text-ink-muted">
+              Choose an element.{" "}
+              <span className="whitespace-nowrap">Hold Shift to add more.</span>
             </p>
           </div>
         )}
@@ -94,9 +98,11 @@ export function LayerList() {
           )}
         </Button>
       </div>
+
+      {/* ── Layer list ── */}
       <div
         id="layer-list-content"
-        className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain p-1"
+        className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain py-1"
         role="listbox"
         aria-label="Page Layers"
         aria-multiselectable="true"
@@ -112,7 +118,7 @@ export function LayerList() {
                 role="option"
                 aria-selected={selected}
                 data-active={active || undefined}
-                className={`grid w-full cursor-pointer grid-cols-[18px_minmax(0,1fr)_16px] items-center gap-2 rounded-md border-0 px-2 py-2 text-left transition-[background-color,color,box-shadow] duration-150 hover:bg-surface-hover ${selected ? "bg-selection text-primary" : "bg-transparent text-secondary"} ${active ? "ring-1 ring-primary" : ""}`}
+                className={`grid w-full cursor-pointer grid-cols-[18px_minmax(0,1fr)_16px] items-center gap-2 rounded-none border-0 px-3 py-2 text-left transition-[background-color,color,box-shadow] duration-150 hover:bg-surface-hover ${selected ? "bg-selection text-primary" : "bg-transparent text-secondary"} ${active ? "ring-inset ring-1 ring-primary" : ""}`}
                 onClick={(event) =>
                   actions.select(
                     element.id,
@@ -120,29 +126,32 @@ export function LayerList() {
                   )
                 }
               >
-                <Box size={15} aria-hidden="true" />
+                <Box size={14} aria-hidden="true" className="opacity-60" />
                 <span className="min-w-0">
-                  <strong className="block truncate text-[13px]">
+                  <strong className="block truncate text-sm font-semibold leading-tight">
                     {element.label}
                   </strong>
-                  <small className="mt-0.5 block truncate text-[11px] text-ink-muted capitalize">
+                  <small className="mt-0.5 block truncate text-xs text-ink-muted capitalize">
                     {element.type}
-                    {active ? " · active" : ""}
+                    {active ? " · Active" : ""}
                   </small>
                 </span>
-                {selected && <MousePointer2 size={14} aria-hidden="true" />}
+                {selected && <MousePointer2 size={13} aria-hidden="true" />}
               </button>
             );
           })}
       </div>
+
+      {/* ── Status bar ── */}
       {expanded && (
-        <div className="mt-3 flex shrink-0 items-center gap-2 rounded-xl bg-raised p-3 shadow-flat">
-          <span className="size-2 rounded-full bg-primary" />
-          <div>
-            <strong className="block text-xs">
-              {state.selectedIds.length} selected
+        <div className="flex shrink-0 items-center gap-2.5 border-t border-border-default px-3 py-3">
+          <span className="size-[7px] shrink-0 rounded-full bg-primary" />
+          <div className="min-w-0">
+            <strong className="block text-xs leading-tight">
+              {state.selectedIds.length}{" "}
+              {state.selectedIds.length === 1 ? "element" : "elements"} selected
             </strong>
-            <span className="mt-0.5 block text-[11px] text-ink-muted">
+            <span className="mt-0.5 block text-xs text-ink-muted">
               {state.editScope === "all"
                 ? "All views"
                 : `${state.editScope} only`}

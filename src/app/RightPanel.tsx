@@ -31,7 +31,7 @@ export function RightPanel() {
             aria-selected={tab === id}
             aria-controls={`panel-${id}`}
             id={`tab-${id}`}
-            className={`flex cursor-pointer flex-col items-center gap-1 border-0 border-b-2 px-1 py-3 text-[11px] transition-colors duration-150 hover:bg-surface-hover hover:text-ink ${tab === id ? "border-primary bg-selection text-primary" : "border-transparent bg-transparent text-ink-muted"}`}
+            className={`flex cursor-pointer flex-col items-center gap-1 border-0 border-b-2 px-1 py-3 text-xs transition-colors duration-150 hover:bg-surface-hover hover:text-ink ${tab === id ? "border-primary bg-selection text-primary" : "border-transparent bg-transparent text-ink-muted"}`}
             onClick={() => setTab(id)}
           >
             <Icon size={16} aria-hidden="true" />

@@ -84,14 +84,14 @@ export function ProposalCard({ item }: { item: PendingProposal }) {
           <strong>
             {state.template.elements[item.command.targetIds[0]]?.label}
           </strong>
-          <small className="mt-1 block text-[11px] text-ink-muted capitalize">
+          <small className="mt-1 block text-xs text-ink-muted capitalize">
             {item.command.viewportScope === "all"
               ? "All views"
               : `${item.command.viewportScope} only`}
           </small>
         </div>
         <span
-          className={`rounded-full px-2 py-1 text-[10px] font-bold tracking-[.04em] uppercase ${item.status === "accepted" ? "bg-selection text-success" : item.status === "rejected" || item.status === "invalid" ? "bg-danger-surface text-danger" : "bg-canvas-soft text-pending"}`}
+          className={`rounded-full px-2 py-1 text-xs font-bold tracking-[.04em] uppercase ${item.status === "accepted" ? "bg-selection text-success" : item.status === "rejected" || item.status === "invalid" ? "bg-danger-surface text-danger" : "bg-canvas-soft text-pending"}`}
           role="status"
           aria-live="polite"
         >
@@ -100,25 +100,25 @@ export function ProposalCard({ item }: { item: PendingProposal }) {
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2">
         <div className="min-w-0 rounded-lg bg-canvas-soft p-2">
-          <span className="mb-1 block text-[10px] font-bold tracking-[.05em] text-ink-muted uppercase">
+          <span className="mb-1 block text-xs font-bold tracking-[.05em] text-ink-muted uppercase">
             Before
           </span>
-          <div className="overflow-auto font-mono text-[10px] leading-relaxed text-secondary">
+          <div className="overflow-auto font-mono text-xs leading-relaxed text-secondary">
             <PropertyValuePreview values={item.before} />
           </div>
         </div>
         <div className="min-w-0 rounded-lg bg-selection p-2">
-          <span className="mb-1 block text-[10px] font-bold tracking-[.05em] text-primary uppercase">
+          <span className="mb-1 block text-xs font-bold tracking-[.05em] text-primary uppercase">
             After
           </span>
-          <div className="overflow-auto font-mono text-[10px] leading-relaxed text-secondary">
+          <div className="overflow-auto font-mono text-xs leading-relaxed text-secondary">
             <PropertyValuePreview values={item.after} />
           </div>
         </div>
       </div>
       {item.metrics && (
         <p
-          className={`mt-2 rounded-md border p-2 text-[11px] leading-normal tabular-nums ${!meetsContrast(item.metrics.contrastAfter, item.metrics.requiredContrast) ? "border-warning-border bg-warning-surface text-pending" : "border-border-default bg-canvas-soft text-ink-muted"}`}
+          className={`mt-2 rounded-md border p-2 text-xs leading-normal tabular-nums ${!meetsContrast(item.metrics.contrastAfter, item.metrics.requiredContrast) ? "border-warning-border bg-warning-surface text-pending" : "border-border-default bg-canvas-soft text-ink-muted"}`}
           role="status"
         >
           Contrast {contrastFormat.format(item.metrics.contrastBefore)}:1 →{" "}

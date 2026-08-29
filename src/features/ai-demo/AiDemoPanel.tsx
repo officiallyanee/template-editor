@@ -73,7 +73,7 @@ export function AiDemoPanel() {
         <Sparkles size={17} aria-hidden="true" />
         <div>
           <strong className="block text-xs">Scope Guard</strong>
-          <span className="mt-0.5 block text-[11px] text-ink-muted">
+          <span className="mt-0.5 block text-xs text-ink-muted">
             {state.selectedIds.length} element
             {state.selectedIds.length === 1 ? "" : "s"} ·{" "}
             {state.editScope === "all"
@@ -158,26 +158,26 @@ export function AiDemoPanel() {
               </button>
             </div>
           )}
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-            <label className="grid min-w-0 place-items-center gap-1 text-[10px] text-ink-muted">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 overflow-hidden">
+            <div className="grid min-w-0 place-items-center gap-1 text-xs text-ink-muted">
               <span>From (Current)</span>
               <span
-                className="size-8 rounded-md border border-border-default"
+                className="size-10 max-w-full rounded-md border border-border-default"
                 style={{ backgroundColor: sourceColor }}
                 aria-label={sourceColor}
               />
               <code className="max-w-full truncate font-mono">
                 {sourceColor}
               </code>
-            </label>
+            </div>
             <span className="text-ink-muted" aria-hidden="true">
               →
             </span>
-            <label className="grid min-w-0 place-items-center gap-1 text-[10px] text-ink-muted">
+            <label className="grid min-w-0 place-items-center gap-1 text-xs text-ink-muted">
               <span>To (Target)</span>
               <input
                 type="color"
-                className="size-8 cursor-pointer rounded-md border border-border-default bg-raised p-0.5"
+                className="size-10 max-w-full cursor-pointer rounded-md border border-border-default bg-raised p-0"
                 value={targetColor}
                 onChange={(e) => setTargetColor(e.target.value)}
                 aria-label="Target color"

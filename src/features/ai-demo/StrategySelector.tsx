@@ -22,7 +22,7 @@ export function StrategySelector() {
           />
           <span className="min-w-0">
             <strong className="block text-xs">{group.label}</strong>
-            <small className="mt-1 block text-[11px] leading-normal text-ink-muted">
+            <small className="mt-1 block text-xs leading-normal text-ink-muted">
               {group.rationale}
             </small>
           </span>

@@ -12,24 +12,24 @@ const positions: Array<{ value: AlignSelf; label: string }> = [
   { value: "start", label: "Start" },
   { value: "center", label: "Center" },
   { value: "end", label: "End" },
-  { value: "stretch", label: "Stretch" },
+  { value: "stretch", label: "Stretch cross-axis" },
 ];
 
 export function PositionControl({ value, onChange }: PositionControlProps) {
   return (
     <label className="flex items-center justify-between gap-3 rounded-lg border border-hairline bg-canvas-soft p-3">
       <span>
-        <span className="block text-[11px] font-semibold tracking-[.04em] text-ink-muted uppercase">
+        <span className="block text-xs font-semibold tracking-[.04em] text-ink-muted uppercase">
           Position in Container
         </span>
-        <small className="mt-1 block text-[10px] text-ink-muted">
-          Safe cross-axis placement
+        <small className="mt-1 block text-xs text-ink-muted">
+          Stretch fills the cross-axis; Item Gap controls spacing.
         </small>
       </span>
       <select
         aria-label="Position in Container"
         name="align-self"
-        className="rounded-lg border border-border-default bg-raised py-1.5 pr-7 pl-2 text-[13px] text-ink"
+        className="min-w-0 max-w-[11rem] rounded-lg border border-border-default bg-raised py-1.5 pr-7 pl-2 text-sm text-ink"
         value={value}
         onChange={(event) => onChange(event.target.value as AlignSelf)}
       >

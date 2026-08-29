@@ -1,4 +1,4 @@
-import { Minimize2 } from "lucide-react";
+import { Minimize2, Monitor } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useEditorUi } from "../../app/EditorUiContext";
@@ -20,7 +20,7 @@ function token(name: string, fallback: string): string {
 
 export function FullscreenPreview() {
   const { state } = useEditor();
-  const { actions, meta } = useEditorUi();
+  const { state: uiState, actions, meta } = useEditorUi();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const proposal = findProposal(state.strategyGroups, state.previewProposalId);
@@ -83,7 +83,7 @@ export function FullscreenPreview() {
             >
               Full Screen Preview
             </h2>
-            <p className="mt-0.5 truncate text-[11px] text-preview-chrome-muted">
+            <p className="mt-0.5 truncate text-xs text-preview-chrome-muted">
               {restoreCheckpoint
                 ? `Saved Version ${restoreCheckpoint.toTemplateVersion} · Not Applied`
                 : proposal
@@ -92,18 +92,29 @@ export function FullscreenPreview() {
             </p>
           </div>
           <ViewportSwitcher />
-          <Button
-            ref={closeButtonRef}
-            tone="inverse"
-            onClick={actions.exitFullscreenPreview}
-          >
-            <Minimize2 size={14} aria-hidden="true" />
-            Exit Preview
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              tone="inverse"
+              aria-label={`${uiState.deviceFrame === "on" ? "Hide" : "Show"} Device Frame`}
+              title={`${uiState.deviceFrame === "on" ? "Hide" : "Show"} Device Frame`}
+              onClick={actions.toggleDeviceFrame}
+            >
+              <Monitor size={14} aria-hidden="true" />
+              <span className="max-sm:sr-only">Frame</span>
+            </Button>
+            <Button
+              ref={closeButtonRef}
+              tone="inverse"
+              onClick={actions.exitFullscreenPreview}
+            >
+              <Minimize2 size={14} aria-hidden="true" />
+              Exit Preview
+            </Button>
+          </div>
         </header>
         <div className="min-h-0 flex-1 overflow-auto p-6 max-sm:p-3">
           <div
-            className={`mx-auto flex h-full min-h-full items-start justify-center ${surround.useBorder ? "ring-1 ring-preview-frame-border" : ""}`}
+            className={`mx-auto flex min-h-full items-start justify-center ${surround.useBorder ? "ring-1 ring-preview-frame-border" : ""}`}
           >
             <FullscreenCanvas />
           </div>

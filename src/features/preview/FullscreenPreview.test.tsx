@@ -54,7 +54,9 @@ it("shows proposal preview status subtitle when a proposal is previewed", async 
 
   await user.click(screen.getByRole("tab", { name: "AI" }));
   await user.click(screen.getByRole("button", { name: "Run AI Demo" }));
-  await user.click(screen.getAllByRole("button", { name: "Preview on Canvas" })[0]);
+  await user.click(
+    screen.getAllByRole("button", { name: "Preview on Canvas" })[0],
+  );
 
   await user.click(screen.getByRole("button", { name: /Full Screen/i }));
   expect(

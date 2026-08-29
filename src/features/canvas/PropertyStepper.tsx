@@ -25,14 +25,14 @@ export function PropertyStepper({
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg border border-hairline bg-canvas-soft p-3">
       <div>
-        <span className="block text-[11px] font-semibold tracking-[.04em] text-ink-muted uppercase">
+        <span className="block text-xs font-semibold tracking-[.04em] text-ink-muted uppercase">
           {label}
         </span>
         <strong className="mt-0.5 block text-sm tabular-nums">
           {value} {unit}
         </strong>
         {overrideLabel && (
-          <small className="mt-1 block text-[10px] text-primary">
+          <small className="mt-1 block text-xs text-primary">
             {overrideLabel}
           </small>
         )}

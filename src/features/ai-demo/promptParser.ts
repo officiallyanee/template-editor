@@ -32,9 +32,10 @@ export function parseColorPrompt(instruction: string): ColorPromptResult {
   const text = instruction.trim();
   if (!/^change\b/i.test(text) || !/\bcolor\b/i.test(text))
     return { matched: false };
-  const match = /^change\s+(?:the\s+)?(?:(text|background)\s+)?color\s+from\s+(\S+)\s+to\s+(\S+)\s*$/i.exec(
-    text,
-  );
+  const match =
+    /^change\s+(?:the\s+)?(?:(text|background)\s+)?color\s+from\s+(\S+)\s+to\s+(\S+)\s*$/i.exec(
+      text,
+    );
   if (!match)
     return {
       matched: true,

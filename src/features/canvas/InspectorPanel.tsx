@@ -33,7 +33,7 @@ export function InspectorPanel() {
   return (
     <div className="flex flex-col gap-4">
       <div className="border-b border-hairline pb-4">
-        <span className="text-[11px] font-bold tracking-[.08em] text-primary uppercase">
+        <span className="text-xs font-bold tracking-[.08em] text-primary uppercase">
           {element.type}
         </span>
         <h3 className="mt-1 text-lg font-bold text-balance">{element.label}</h3>
@@ -117,7 +117,7 @@ export function InspectorPanel() {
       )}
       {element.type === "container" && values.direction && (
         <fieldset className="m-0 rounded-lg border border-hairline bg-canvas-soft p-3">
-          <legend className="px-1 text-[11px] font-semibold tracking-[.04em] text-ink-muted uppercase">
+          <legend className="px-1 text-xs font-semibold tracking-[.04em] text-ink-muted uppercase">
             Layout Direction
           </legend>
           <div className="mt-1 grid grid-cols-2 gap-2">

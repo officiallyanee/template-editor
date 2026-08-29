@@ -25,7 +25,7 @@ it("keeps the layer summary outside the independently scrolling layer list", () 
     "flex-1",
     "overflow-x-hidden",
     "overflow-y-auto",
-    "p-1",
+    "py-1",
   );
   expect(summary).toHaveClass("shrink-0");
 });
@@ -49,11 +49,14 @@ it("uses shrink-safe header controls and fractional mobile workspace rows", () =
   expect(shell).toHaveClass(
     "min-h-0",
     "overflow-hidden",
+    "grid-cols-[clamp(210px,16vw,240px)_minmax(480px,1fr)_clamp(320px,24vw,360px)]",
+    "max-sm:h-[calc(100dvh-84px)]",
     "max-sm:grid-rows-[minmax(0,55fr)_minmax(0,45fr)]",
   );
   expect(
     screen.getByLabelText("Editable template canvas").parentElement,
   ).toHaveClass("items-center", "justify-center");
+  expect(screen.getByRole("main")).toHaveClass("min-h-0");
 });
 
 it("lists template layers in document order instead of interleaving children", () => {
@@ -67,7 +70,7 @@ it("lists template layers in document order instead of interleaving children", (
   expect(
     within(layerList)
       .getAllByRole("option")
-      .map((option) => option.textContent?.replace(" · active", "")),
+      .map((option) => option.textContent?.replace(" · Active", "")),
   ).toEqual([
     "Pagecontainer",
     "Eyebrowparagraph",
@@ -110,7 +113,9 @@ it("toggles theme and handles reset confirmation", async () => {
     </AppProviders>,
   );
 
-  const themeBtn = screen.getByRole("button", { name: /Switch to (Dark|Light) Theme/i });
+  const themeBtn = screen.getByRole("button", {
+    name: /Switch to (Dark|Light) Theme/i,
+  });
   await user.click(themeBtn);
   expect(document.documentElement).toHaveAttribute("data-theme");
 

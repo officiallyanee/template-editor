@@ -166,6 +166,10 @@ it("previews and atomically restores a saved document as a new saved version", a
   expect(screen.getByTestId("element-headline")).toHaveStyle({
     fontSize: "56px",
   });
+  expect(screen.getByRole("document")).toHaveStyle({ minHeight: "650px" });
+  expect(screen.getByRole("document").parentElement).toHaveStyle({
+    maxWidth: "920px",
+  });
   expect(screen.getByText("Autosaved · v3")).toBeInTheDocument();
   expect(screen.getByTestId("element-headline")).not.toHaveAttribute(
     "role",
@@ -204,9 +208,9 @@ it("opens a read-only full-screen preview and restores focus on exit", async () 
   expect(
     within(dialog).getByLabelText("Template preview canvas"),
   ).toBeInTheDocument();
-  expect(within(dialog).getByLabelText("Template preview canvas")).toHaveStyle({
-    maxWidth: "none",
-  });
+  expect(
+    within(dialog).getByLabelText("Template preview canvas").parentElement,
+  ).toHaveStyle({ maxWidth: "920px" });
   expect(
     within(dialog).getByLabelText("Template preview canvas").parentElement,
   ).toHaveClass("flex", "justify-center");
@@ -216,9 +220,9 @@ it("opens a read-only full-screen preview and restores focus on exit", async () 
   const exit = within(dialog).getByRole("button", { name: "Exit Preview" });
   expect(exit).toHaveClass("text-preview-chrome-text");
   await user.click(within(dialog).getByRole("button", { name: "Mobile" }));
-  expect(within(dialog).getByLabelText("Template preview canvas")).toHaveStyle({
-    maxWidth: "375px",
-  });
+  expect(
+    within(dialog).getByLabelText("Template preview canvas").parentElement,
+  ).toHaveStyle({ maxWidth: "375px" });
   expect(screen.getByText("Version saved · v1")).toBeInTheDocument();
   await user.keyboard("{Escape}");
 
@@ -226,6 +230,30 @@ it("opens a read-only full-screen preview and restores focus on exit", async () 
     screen.queryByRole("dialog", { name: "Full Screen Preview" }),
   ).toBeNull();
   expect(launch).toHaveFocus();
+});
+
+it("persists the optional device frame without changing template state", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+
+  const canvas = screen.getByLabelText("Editable template canvas");
+  expect(canvas.parentElement).toHaveAttribute("data-device-frame", "off");
+  expect(
+    canvas.parentElement?.querySelector("[data-device-hardware]"),
+  ).toBeNull();
+  await user.click(screen.getByRole("button", { name: "Show Device Frame" }));
+
+  expect(canvas.parentElement).toHaveAttribute("data-device-frame", "on");
+  expect(
+    canvas.parentElement?.querySelector('[data-device-hardware="desktop"]'),
+  ).toBeInTheDocument();
+  expect(localStorage.getItem("scope-device-frame:v2")).toBe("on");
+  expect(localStorage.getItem("scope-device-frame")).toBeNull();
+  expect(screen.getByText("Version saved · v1")).toBeInTheDocument();
 });
 
 it("writes one session checkpoint when the page closes with unsaved edits", async () => {

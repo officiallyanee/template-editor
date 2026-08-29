@@ -159,8 +159,70 @@ it("keeps viewport-only container spacing isolated", async () => {
   await user.click(screen.getByRole("button", { name: "Increase item gap" }));
   expect(document.querySelector(".services")).toHaveStyle({ gap: "20px" });
 
+  expect(screen.getByRole("button", { name: "Desktop" })).toBeDisabled();
+  await user.selectOptions(screen.getByLabelText("Edit Scope"), "all");
   await user.click(screen.getByRole("button", { name: "Desktop" }));
   expect(document.querySelector(".services")).toHaveStyle({ gap: "16px" });
+});
+
+it("applies mobile heading size edits to the mobile layer", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+
+  await user.click(screen.getByRole("option", { name: /Hero heading/i }));
+  await user.selectOptions(screen.getByLabelText("Edit Scope"), "mobile");
+
+  const heading = screen.getByTestId("element-headline");
+  expect(heading).toHaveStyle({ fontSize: "35px" });
+  await user.click(screen.getByRole("button", { name: "Increase text size" }));
+  expect(heading).toHaveStyle({ fontSize: "37px" });
+});
+
+it("locks a single-view edit scope to its matching preview", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+
+  await user.selectOptions(screen.getByLabelText("Edit Scope"), "tablet");
+
+  expect(screen.getByRole("button", { name: "Tablet" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  expect(screen.getByRole("button", { name: "Desktop" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Mobile" })).toBeDisabled();
+  expect(screen.getByText(/Preview locked to tablet/i)).toBeInTheDocument();
+
+  await user.selectOptions(screen.getByLabelText("Edit Scope"), "all");
+  expect(screen.getByRole("button", { name: "Desktop" })).toBeEnabled();
+  expect(screen.getByRole("button", { name: "Mobile" })).toBeEnabled();
+});
+
+it("lets stretch fill the cross-axis without changing its meaning to spacing", async () => {
+  const user = userEvent.setup();
+  render(
+    <AppProviders>
+      <App />
+    </AppProviders>,
+  );
+
+  await user.selectOptions(
+    screen.getByLabelText("Position in Container"),
+    "stretch",
+  );
+
+  expect(screen.getByTestId("element-headline")).toHaveStyle({
+    alignSelf: "stretch",
+  });
+  expect(screen.getByTestId("element-headline")).toHaveClass("max-w-none");
+  expect(screen.getByText(/Item Gap controls spacing/i)).toBeInTheDocument();
 });
 
 it("positions a child through a constrained cross-axis value", async () => {

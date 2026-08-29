@@ -20,6 +20,7 @@ it("uses Editorial as the only interface design", () => {
 
   expect(screen.queryByLabelText("Interface Style")).not.toBeInTheDocument();
   expect(document.documentElement).not.toHaveAttribute("data-style");
+  expect(document.documentElement.dataset.theme).toBe("light");
   expect(localStorage.getItem("scope-ui-style")).toBeNull();
   expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute(
     "content",
@@ -40,7 +41,8 @@ it("toggles and persists the editor theme without changing template state", asyn
   );
   expect(document.documentElement.dataset.theme).toBe("dark");
   expect(document.documentElement.style.colorScheme).toBe("dark");
-  expect(localStorage.getItem("scope-ui-theme")).toBe("dark");
+  expect(localStorage.getItem("scope-ui-theme:v2")).toBe("dark");
+  expect(localStorage.getItem("scope-ui-theme")).toBeNull();
   expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute(
     "content",
     "#111111",

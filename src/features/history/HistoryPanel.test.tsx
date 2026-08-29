@@ -55,6 +55,9 @@ it("shows empty state when an element has no edits yet", async () => {
 
   await user.click(screen.getByRole("tab", { name: "History" }));
   expect(screen.getByText("No edits yet")).toBeInTheDocument();
+  expect(
+    screen.getByText(/History is element-wise and viewport-scoped/i),
+  ).toBeInTheDocument();
 });
 
 it("shows placeholder when no element is selected in history tab", async () => {

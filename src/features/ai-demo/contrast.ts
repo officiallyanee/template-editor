@@ -25,10 +25,7 @@ export function contrastRatio(foreground: string, background: string): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-export function requiredTextContrast(
-  fontSize = 16,
-  fontWeight = 400,
-): number {
+export function requiredTextContrast(fontSize = 16, fontWeight = 400): number {
   const isLarge = fontSize >= 24 || (fontSize >= 18.66 && fontWeight >= 700);
   return isLarge ? 3 : 4.5;
 }

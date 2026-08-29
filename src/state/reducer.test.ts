@@ -138,9 +138,7 @@ it("tablet viewport edits are isolated from desktop and mobile", () => {
     command(state, "headline", { fontSize: 42 }, "tablet"),
   );
   if (!result.ok) throw new Error();
-  expect(
-    result.state.elements.headline.overrides.tablet?.fontSize,
-  ).toBe(42);
+  expect(result.state.elements.headline.overrides.tablet?.fontSize).toBe(42);
   expect(resolved(result.state.elements.headline, "desktop").fontSize).toBe(54);
   expect(resolved(result.state.elements.headline, "mobile").fontSize).toBe(35);
 });
@@ -207,7 +205,10 @@ it("code editor returns a friendly error for malformed JSON", () => {
 it("code editor rejects schema-invalid values with a descriptive error", () => {
   const state = freshState();
   const badSchema = parseAndDiff(
-    JSON.stringify({ ...resolved(state.elements.headline, "desktop"), fontSize: 5 }),
+    JSON.stringify({
+      ...resolved(state.elements.headline, "desktop"),
+      fontSize: 5,
+    }),
     state.elements.headline,
     "desktop",
     "all",
@@ -217,7 +218,10 @@ it("code editor rejects schema-invalid values with a descriptive error", () => {
   if (!badSchema.ok) expect(badSchema.error.length).toBeGreaterThan(0);
 
   const unknownField = parseAndDiff(
-    JSON.stringify({ ...resolved(state.elements.headline, "desktop"), zIndex: 10 }),
+    JSON.stringify({
+      ...resolved(state.elements.headline, "desktop"),
+      zIndex: 10,
+    }),
     state.elements.headline,
     "desktop",
     "all",

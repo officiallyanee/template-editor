@@ -38,6 +38,10 @@ export function HistoryPanel() {
           </span>
         </div>
       </div>
+      <p className="m-0 border-l-2 border-primary pl-3 text-xs leading-normal text-ink-muted">
+        History is element-wise and viewport-scoped. Restoring this element
+        appends a new revision without rolling back siblings or other views.
+      </p>
       {entries.length === 0 ? (
         <div className="grid place-items-center gap-2 rounded-xl border border-dashed border-border-default px-4 py-8 text-center text-ink-muted">
           <History size={22} aria-hidden="true" />
@@ -66,16 +70,16 @@ export function HistoryPanel() {
                         ? "Initial version"
                         : `${entry.source} edit`}
                   </strong>
-                  <small className="mt-1 block text-[11px] text-ink-muted tabular-nums">
+                  <small className="mt-1 block text-xs text-ink-muted tabular-nums">
                     Version {entry.templateVersion} · {entry.viewportScope} ·{" "}
                     {timeFormat.format(entry.committedAt)}
                   </small>
                 </div>
-                <code className="col-span-2 block break-words rounded-md bg-canvas-soft p-2 font-mono text-[11px] text-secondary">
+                <code className="col-span-2 block break-words rounded-md bg-canvas-soft p-2 font-mono text-xs text-secondary">
                   {revisionFields(entry).join(", ")}
                 </code>
                 {!canRestore && (
-                  <p className="col-span-2 m-0 text-[11px] text-ink-muted">
+                  <p className="col-span-2 m-0 text-xs text-ink-muted">
                     Nothing to restore—current values already match.
                   </p>
                 )}

@@ -27,7 +27,7 @@ export function ProposalReview() {
             </>
           )}
           {active.metrics && active.metrics.evaluated > 0 && (
-            <small className="block text-[11px] text-ink-muted">
+            <small className="block text-xs text-ink-muted">
               {active.metrics.compliant} of {active.metrics.evaluated} contrast
               checks pass.
             </small>

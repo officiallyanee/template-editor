@@ -81,7 +81,9 @@ describe("structural validator", () => {
 
   it("accepts a valid canvas command", () => {
     const state = freshState();
-    expect(validateStructural(command(state, "headline", { fontSize: 20 }))).toBeNull();
+    expect(
+      validateStructural(command(state, "headline", { fontSize: 20 })),
+    ).toBeNull();
   });
 });
 

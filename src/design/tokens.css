@@ -1,7 +1,11 @@
 :root {
-  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
-  --font-editorial-body: Lora, Georgia, "Times New Roman", serif;
+  --font-sans:
+    "Apercu", Inter, Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --font-display:
+    "WiredDisplay", "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-editorial-body:
+    "BreveText", Lora, "Source Serif Pro", Georgia, "Times New Roman", serif;
   --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
   --primary: #000000;
   --primary-active: #1a1a1a;
@@ -26,9 +30,14 @@
   --danger-border: #f0b7af;
   --warning-surface: #fff7ed;
   --warning-border: #fdba74;
-  --preview-surround-light: #fafafa;
-  --preview-surround-dark: #282828;
+  --preview-surround-light: #f4f2ed;
+  --preview-surround-dark: #27292c;
   --preview-frame-border: #aaa7a2;
+  --device-frame-body: #25272a;
+  --device-frame-edge: #8c9299;
+  --device-frame-highlight: #e6e8ea;
+  --device-frame-detail: #0b0c0d;
+  --device-frame-shadow: rgba(0, 0, 0, 0.32);
   --preview-chrome: #202225;
   --preview-chrome-control: #34373b;
   --preview-chrome-hover: #43474c;
@@ -49,7 +58,7 @@
   --radius-xl: 0px;
   --radius-full: 0px;
   --shadow-flat: 0 0 0 1px var(--hairline);
-  --shadow-soft: 0 0 0 1px var(--hairline);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 18px rgba(0, 0, 0, 0.08);
 }
 
 :root[data-theme="dark"] {
@@ -78,5 +87,10 @@
   --warning-surface: #39291c;
   --warning-border: #875629;
   --preview-frame-border: #555d66;
-  --shadow-soft: 0 0 0 1px var(--hairline);
+  --device-frame-body: #c7cbd0;
+  --device-frame-edge: #737a82;
+  --device-frame-highlight: #f7f8f9;
+  --device-frame-detail: #171819;
+  --device-frame-shadow: rgba(0, 0, 0, 0.72);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 18px rgba(0, 0, 0, 0.24);
 }

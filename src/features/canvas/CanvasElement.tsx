@@ -49,7 +49,7 @@ function ElementView({
     role: editable ? "option" : undefined,
     "aria-selected": editable ? selected : undefined,
     "data-active": active || undefined,
-    className: `template-element m-0 max-w-[720px] cursor-pointer whitespace-pre-line rounded-md ${element.type === "button" ? "grid place-items-center" : ""} ${selected ? "is-selected" : ""} ${active ? "is-active" : ""} ${previewed ? "is-proposal-preview" : ""}`,
+    className: `template-element m-0 cursor-pointer whitespace-pre-line rounded-md ${props.alignSelf === "stretch" ? "max-w-none" : "max-w-[720px]"} ${element.type === "button" ? "grid place-items-center" : ""} ${selected ? "is-selected" : ""} ${active ? "is-active" : ""} ${previewed ? "is-proposal-preview" : ""}`,
     style,
     onClick: editable ? select : undefined,
     onKeyDown: editable

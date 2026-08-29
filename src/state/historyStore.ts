@@ -1,8 +1,4 @@
-import type {
-  RevisionEntry,
-  TemplateElement,
-  ViewportScope,
-} from "./types";
+import type { RevisionEntry, TemplateElement, ViewportScope } from "./types";
 export function historyForScope(
   element: TemplateElement,
   scope?: ViewportScope,
@@ -31,7 +27,6 @@ export function historyForScope(
 
   return [initialEntry, ...filtered].reverse();
 }
-
 
 export function restoreWouldChange(
   element: TemplateElement,

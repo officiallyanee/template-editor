@@ -154,15 +154,19 @@ it("does not create a version for an exact no-op command", () => {
 
 it("restores from an AI-accepted revision without special-casing the source", () => {
   let state = freshState();
-  const aiResult = dispatchCommand(state, {
-    commandId: "ai-prominence",
-    source: "ai",
-    targetIds: ["headline"],
-    viewportScope: "all",
-    baseRevision: state.version,
-    changes: { headline: { op: "set", values: { fontWeight: 800 } } },
-    meta: { strategyId: "typography-hierarchy" },
-  }, { selectedIds: ["headline"], requestedScope: "all" });
+  const aiResult = dispatchCommand(
+    state,
+    {
+      commandId: "ai-prominence",
+      source: "ai",
+      targetIds: ["headline"],
+      viewportScope: "all",
+      baseRevision: state.version,
+      changes: { headline: { op: "set", values: { fontWeight: 800 } } },
+      meta: { strategyId: "typography-hierarchy" },
+    },
+    { selectedIds: ["headline"], requestedScope: "all" },
+  );
   if (!aiResult.ok) throw new Error();
   state = aiResult.state;
   const aiEntry = state.elements.headline.history.at(-1)!;
@@ -240,7 +244,9 @@ it("restoreWouldChange: returns true when a reorder entry differs from current o
     changes: { headline: { op: "reorder", order: 3 } },
   });
   if (!reorderBack.ok) throw new Error();
-  expect(restoreWouldChange(reorderBack.state.elements.headline, entry)).toBe(true);
+  expect(restoreWouldChange(reorderBack.state.elements.headline, entry)).toBe(
+    true,
+  );
 });
 
 it("restoreWouldChange: returns false when reorder entry matches current order", () => {

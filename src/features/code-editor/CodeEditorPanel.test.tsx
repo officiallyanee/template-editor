@@ -1,9 +1,8 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it } from "vitest";
 import { App } from "../../app/App";
 import { AppProviders } from "../../app/AppProviders";
-import { CodeEditorPanel } from "./CodeEditorPanel";
 
 beforeEach(() => localStorage.clear());
 
