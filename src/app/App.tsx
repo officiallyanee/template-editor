@@ -24,7 +24,7 @@ export function App() {
       <header className="relative z-10 flex h-[68px] min-w-0 items-center justify-between gap-5 border-b border-hairline bg-canvas px-5 max-sm:h-28 max-sm:flex-wrap max-sm:content-center max-sm:gap-2 max-sm:px-3">
         <div className="flex shrink-0 items-center gap-2.5">
           <div>
-            <strong className="block font-[var(--font-display)] text-[17px] tracking-[-0.25px]">
+            <strong className="block text-[17px] tracking-[-0.25px]">
               Scope
             </strong>
             <span className="block text-xs tracking-[.08em] text-ink-muted uppercase max-lg:hidden">

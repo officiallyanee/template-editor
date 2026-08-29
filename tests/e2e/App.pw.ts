@@ -36,6 +36,34 @@ test("starts light with presentation frames off and renders each hardware varian
   const failures = await openApp(page);
   const shell = page.locator(".device-frame-shell").first();
 
+  const typography = await page.evaluate(() => {
+    const style = (selector: string) => {
+      const element = document.querySelector(selector);
+      if (!element) throw new Error(`Missing typography target: ${selector}`);
+      const computed = getComputedStyle(element);
+      return {
+        family: computed.fontFamily,
+        weight: computed.fontWeight,
+      };
+    };
+    return {
+      body: style("body"),
+      editorHeading: style("#layer-list-heading h2"),
+      previewHeading: style('[data-testid="element-headline"]'),
+      previewBody: style('[data-testid="element-intro"]'),
+    };
+  });
+  expect(typography.body.family).toContain("Inter");
+  expect(typography.editorHeading.family).toContain("Playfair Display");
+  expect(typography.editorHeading.weight).toBe("400");
+  expect(
+    await page
+      .locator("#layer-list-heading h2")
+      .evaluate((element) => getComputedStyle(element).fontSize),
+  ).toBe("20px");
+  expect(typography.previewHeading.family).toContain("Playfair Display");
+  expect(typography.previewBody.family).toContain("Lora");
+
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await expect(shell).toHaveAttribute("data-device-frame", "off");
   await expect(page.locator("[data-device-hardware]")).toHaveCount(0);
@@ -109,7 +137,7 @@ test("centers all full-screen previews at the exact logical widths", async ({
   await page.getByRole("button", { name: "Full Screen Preview" }).click();
   const dialog = page.getByRole("dialog", { name: "Full Screen Preview" });
 
-  for (const [label, width, minHeight] of [
+  for (const [label, width, height] of [
     ["Desktop", 920, 650],
     ["Tablet", 768, 720],
     ["Mobile", 375, 667],
@@ -118,7 +146,8 @@ test("centers all full-screen previews at the exact logical widths", async ({
     const frame = page.locator("dialog .device-frame-shell");
     const canvas = page.getByLabel("Template preview canvas");
     await expect(frame).toHaveCSS("max-width", `${width}px`);
-    await expect(canvas).toHaveCSS("min-height", `${minHeight}px`);
+    await expect(frame).toHaveCSS("height", `${height}px`);
+    await expect(canvas).toHaveCSS("height", `${height}px`);
     const position = await frame.evaluate((element) => {
       const rect = element.getBoundingClientRect();
       return {
@@ -175,31 +204,37 @@ test("locks scoped previews and contains wide-panel color controls", async ({
   expect(failures).toEqual([]);
 });
 
-test("scrolls the canvas when the page grows beyond the mobile editor row", async ({
+test("keeps the device frame fixed and scrolls growing page content inside it", async ({
   page,
 }) => {
   const failures = await openApp(page);
   await page.getByRole("option", { name: /Page container/i }).click();
+  await page.getByRole("button", { name: "Mobile" }).click();
   await page.setViewportSize({ width: 390, height: 844 });
+
+  const frame = page.locator(".device-frame-shell").first();
+  const canvas = page.getByLabel("Editable template canvas");
+  const heightBefore = await frame.evaluate((element) => element.clientHeight);
 
   for (let index = 0; index < 24; index += 1)
     await page
       .getByRole("button", { name: "Increase container padding" })
       .click();
 
-  const metrics = await page
-    .getByLabel("Editable template canvas")
-    .evaluate((element) => {
-      const scroller = element.closest("main");
-      if (!scroller) throw new Error("Canvas main scroll container not found");
-      return {
-        scrollHeight: scroller.scrollHeight,
-        clientHeight: scroller.clientHeight,
-        overflowY: getComputedStyle(scroller).overflowY,
-      };
-    });
+  const heightAfter = await frame.evaluate((element) => element.clientHeight);
+  const metrics = await canvas.evaluate((element) => ({
+    scrollHeight: element.scrollHeight,
+    clientHeight: element.clientHeight,
+    overflowY: getComputedStyle(element).overflowY,
+  }));
+  expect(heightBefore).toBe(667);
+  expect(heightAfter).toBe(heightBefore);
   expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight);
   expect(metrics.overflowY).toBe("auto");
+  await canvas.evaluate((element) => element.scrollTo({ top: 100 }));
+  expect(await canvas.evaluate((element) => element.scrollTop)).toBeGreaterThan(
+    0,
+  );
   expect(failures).toEqual([]);
 });
 
@@ -216,7 +251,7 @@ test("keeps saved preview geometry stable and restores a stretched template edit
   await page.getByRole("button", { name: "Preview Restore" }).click();
 
   const savedCanvas = page.getByLabel("Template preview canvas");
-  await expect(savedCanvas).toHaveCSS("min-height", "650px");
+  await expect(savedCanvas).toHaveCSS("height", "650px");
   await expect(savedCanvas.locator('[data-type="heading"]')).toHaveCSS(
     "font-size",
     "56px",

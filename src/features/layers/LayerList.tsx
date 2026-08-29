@@ -40,23 +40,20 @@ export function LayerList() {
   return (
     <aside
       id="layer-rail"
-      className={`flex min-h-0 flex-col overflow-hidden border-r border-border-default max-lg:hidden ${expanded ? "" : "items-center"}`}
+      className={`flex min-h-0 flex-col overflow-hidden border-r border-border-default py-5 max-lg:hidden ${expanded ? "px-3.5" : "items-center px-2"}`}
       aria-label="Template layers"
     >
-      {/* ── Panel header ── */}
       <div
-        className={`flex shrink-0 items-start gap-2 border-b border-border-default py-3 ${
-          expanded ? "px-3" : "justify-center px-2"
-        }`}
+        className={`flex w-full shrink-0 items-start gap-2 px-1 ${expanded ? "justify-between pb-4.5" : "justify-center"}`}
       >
         {expanded && (
-          <div id="layer-list-heading" className="min-w-0 flex-1">
-            <label className="block">
+          <div id="layer-list-heading" className="min-w-0">
+            <label className="mb-2 block">
               <span className="sr-only">Template</span>
               <select
                 aria-label="Template"
                 name="template"
-                className="w-full min-w-0 rounded border border-hairline bg-raised py-1 pr-7 pl-2 text-xs font-bold tracking-[.06em] text-primary uppercase"
+                className="w-full min-w-0 rounded-lg border border-hairline bg-raised py-1.5 pr-7 pl-2 text-xs font-bold tracking-[.06em] text-primary uppercase"
                 value={state.template.templateId}
                 onChange={(event) => {
                   const nextId = event.target.value;
@@ -70,16 +67,15 @@ export function LayerList() {
                   </option>
                 ))}
               </select>
+              <span className="mt-1 block truncate text-xs font-medium tracking-normal text-ink-muted normal-case">
+                {activeTemplate?.description ?? "Template document"}
+              </span>
             </label>
-            <span className="mt-0.5 block truncate text-xs text-ink-faint">
-              {activeTemplate?.description ?? "Template document"}
-            </span>
-            <h2 className="mt-3 text-lg font-bold tracking-[-0.3px] leading-tight">
+            <h2 className="mb-1.5 text-xl tracking-[-0.2px] text-balance">
               Page Layers
             </h2>
-            <p className="mt-0.5 text-xs leading-normal text-ink-muted">
-              Choose an element.{" "}
-              <span className="whitespace-nowrap">Hold Shift to add more.</span>
+            <p className="m-0 text-xs leading-normal text-ink-muted">
+              Choose an element. Hold Shift to add more.
             </p>
           </div>
         )}
@@ -99,10 +95,9 @@ export function LayerList() {
         </Button>
       </div>
 
-      {/* ── Layer list ── */}
       <div
         id="layer-list-content"
-        className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain py-1"
+        className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain p-1"
         role="listbox"
         aria-label="Page Layers"
         aria-multiselectable="true"
@@ -118,7 +113,7 @@ export function LayerList() {
                 role="option"
                 aria-selected={selected}
                 data-active={active || undefined}
-                className={`grid w-full cursor-pointer grid-cols-[18px_minmax(0,1fr)_16px] items-center gap-2 rounded-none border-0 px-3 py-2 text-left transition-[background-color,color,box-shadow] duration-150 hover:bg-surface-hover ${selected ? "bg-selection text-primary" : "bg-transparent text-secondary"} ${active ? "ring-inset ring-1 ring-primary" : ""}`}
+                className={`grid w-full cursor-pointer grid-cols-[18px_minmax(0,1fr)_16px] items-center gap-2 rounded-none border-0 px-2 py-2 text-left transition-[background-color,color,box-shadow] duration-150 hover:bg-surface-hover ${selected ? "bg-selection text-primary" : "bg-transparent text-secondary"} ${active ? "ring-inset ring-1 ring-primary" : ""}`}
                 onClick={(event) =>
                   actions.select(
                     element.id,
@@ -126,7 +121,7 @@ export function LayerList() {
                   )
                 }
               >
-                <Box size={14} aria-hidden="true" className="opacity-60" />
+                <Box size={15} aria-hidden="true" />
                 <span className="min-w-0">
                   <strong className="block truncate text-sm font-semibold leading-tight">
                     {element.label}
@@ -136,16 +131,15 @@ export function LayerList() {
                     {active ? " · Active" : ""}
                   </small>
                 </span>
-                {selected && <MousePointer2 size={13} aria-hidden="true" />}
+                {selected && <MousePointer2 size={14} aria-hidden="true" />}
               </button>
             );
           })}
       </div>
 
-      {/* ── Status bar ── */}
       {expanded && (
-        <div className="flex shrink-0 items-center gap-2.5 border-t border-border-default px-3 py-3">
-          <span className="size-[7px] shrink-0 rounded-full bg-primary" />
+        <div className="mt-3 flex shrink-0 items-center gap-2.5 border-t border-border-default px-3 pt-3">
+          <span className="size-2 shrink-0 rounded-full bg-primary" />
           <div className="min-w-0">
             <strong className="block text-xs leading-tight">
               {state.selectedIds.length}{" "}

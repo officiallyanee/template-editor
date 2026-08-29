@@ -49,8 +49,8 @@ export function ActivityPanel({
         <h2 className="text-lg font-bold text-balance">Saved Versions</h2>
         <p className="mt-1 text-xs leading-normal text-ink-muted">
           Each save is a whole-document checkpoint. Its entries remain
-          element-wise so individual changes can still be reviewed and
-          recovered without rolling back siblings.
+          element-wise so individual changes can still be reviewed and recovered
+          without rolling back siblings.
         </p>
       </div>
       {previewed && restorePlan && (

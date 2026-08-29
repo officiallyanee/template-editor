@@ -34,7 +34,7 @@ export function DeviceFrame({
       className="device-frame-shell relative flex w-full shrink-0 items-center justify-center transition-[max-width] duration-200 ease-out motion-reduce:transition-none"
       data-device-frame={state.deviceFrame}
       data-viewport={viewport}
-      style={{ maxWidth: dimensions.width }}
+      style={{ maxWidth: dimensions.width, height: dimensions.height }}
     >
       {state.deviceFrame === "on" ? (
         <DeviceHardware viewport={viewport} />

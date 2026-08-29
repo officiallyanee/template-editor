@@ -22,9 +22,7 @@ export function validateStructural(command: EditCommand): PipelineError | null {
     };
   if (
     command.source !== "restore" &&
-    command.targetIds.some(
-      (id) => command.changes[id].op === "replace-layer",
-    )
+    command.targetIds.some((id) => command.changes[id].op === "replace-layer")
   )
     return {
       code: "INVALID_SHAPE",

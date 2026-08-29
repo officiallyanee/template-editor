@@ -166,9 +166,10 @@ it("previews and atomically restores a saved document as a new saved version", a
   expect(screen.getByTestId("element-headline")).toHaveStyle({
     fontSize: "56px",
   });
-  expect(screen.getByRole("document")).toHaveStyle({ minHeight: "650px" });
+  expect(screen.getByRole("document")).toHaveClass("h-full", "overflow-y-auto");
   expect(screen.getByRole("document").parentElement).toHaveStyle({
     maxWidth: "920px",
+    height: "650px",
   });
   expect(screen.getByText("Autosaved · v3")).toBeInTheDocument();
   expect(screen.getByTestId("element-headline")).not.toHaveAttribute(

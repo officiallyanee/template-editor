@@ -43,7 +43,6 @@ function TemplateDocument({ mode }: { mode: CanvasMode }) {
     state.viewport,
     previewProposal,
   );
-  const dimensions = PREVIEW_DIMENSIONS[state.viewport];
   const editable = mode === "editable" && !restoreCheckpoint;
   const select = (event: MouseEvent | KeyboardEvent, id: string) => {
     event.stopPropagation();
@@ -56,13 +55,9 @@ function TemplateDocument({ mode }: { mode: CanvasMode }) {
 
   return (
     <div
-      className="preview flex w-full flex-col items-center justify-center overflow-hidden shadow-flat"
+      className="preview h-full min-h-0 w-full overflow-x-hidden overflow-y-auto overscroll-contain shadow-flat"
       style={{
-        minHeight: dimensions.minHeight,
         backgroundColor: pageProps.backgroundColor,
-        padding: pageProps.padding,
-        gap: pageProps.gap,
-        flexDirection: pageProps.direction,
       }}
       role={editable ? "listbox" : "document"}
       tabIndex={editable ? 0 : undefined}
@@ -73,7 +68,11 @@ function TemplateDocument({ mode }: { mode: CanvasMode }) {
       onClick={
         editable
           ? (event) => {
-              if (event.target === event.currentTarget) select(event, page.id);
+              if (
+                event.target === event.currentTarget ||
+                (event.target as HTMLElement).dataset.pageContent === "true"
+              )
+                select(event, page.id);
             }
           : undefined
       }
@@ -91,47 +90,57 @@ function TemplateDocument({ mode }: { mode: CanvasMode }) {
           : undefined
       }
     >
-      {top.map((item) =>
-        item.id === services.id ? (
-          <section
-            key={item.id}
-            className={`services flex w-full max-w-[720px] rounded-md ${editable ? "cursor-pointer" : ""} ${editable && state.selectedIds.includes(item.id) ? "is-selected" : ""} ${editable && state.activeId === item.id ? "is-active" : ""} ${editable && previewProposal?.command.targetIds.includes(item.id) ? "is-proposal-preview" : ""}`}
-            data-active={
-              editable && state.activeId === item.id ? true : undefined
-            }
-            style={{
-              backgroundColor: serviceProps.backgroundColor,
-              padding: serviceProps.padding,
-              gap: serviceProps.gap,
-              flexDirection: serviceProps.direction,
-              alignSelf: serviceProps.alignSelf,
-              borderRadius: serviceProps.borderRadius,
-            }}
-            tabIndex={editable ? 0 : undefined}
-            role={editable ? "option" : undefined}
-            aria-selected={
-              editable ? state.selectedIds.includes(item.id) : undefined
-            }
-            onClick={editable ? (event) => select(event, item.id) : undefined}
-            onKeyDown={
-              editable
-                ? (event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      select(event, item.id);
+      <div
+        className="flex min-h-full w-full flex-col items-center justify-center"
+        data-page-content="true"
+        style={{
+          padding: pageProps.padding,
+          gap: pageProps.gap,
+          flexDirection: pageProps.direction,
+        }}
+      >
+        {top.map((item) =>
+          item.id === services.id ? (
+            <section
+              key={item.id}
+              className={`services flex w-full max-w-[720px] rounded-md ${editable ? "cursor-pointer" : ""} ${editable && state.selectedIds.includes(item.id) ? "is-selected" : ""} ${editable && state.activeId === item.id ? "is-active" : ""} ${editable && previewProposal?.command.targetIds.includes(item.id) ? "is-proposal-preview" : ""}`}
+              data-active={
+                editable && state.activeId === item.id ? true : undefined
+              }
+              style={{
+                backgroundColor: serviceProps.backgroundColor,
+                padding: serviceProps.padding,
+                gap: serviceProps.gap,
+                flexDirection: serviceProps.direction,
+                alignSelf: serviceProps.alignSelf,
+                borderRadius: serviceProps.borderRadius,
+              }}
+              tabIndex={editable ? 0 : undefined}
+              role={editable ? "option" : undefined}
+              aria-selected={
+                editable ? state.selectedIds.includes(item.id) : undefined
+              }
+              onClick={editable ? (event) => select(event, item.id) : undefined}
+              onKeyDown={
+                editable
+                  ? (event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        select(event, item.id);
+                      }
                     }
-                  }
-                : undefined
-            }
-          >
-            {serviceItems.map((child) => (
-              <Element key={child.id} element={child} />
-            ))}
-          </section>
-        ) : (
-          <Element key={item.id} element={item} />
-        ),
-      )}
+                  : undefined
+              }
+            >
+              {serviceItems.map((child) => (
+                <Element key={child.id} element={child} />
+              ))}
+            </section>
+          ) : (
+            <Element key={item.id} element={item} />
+          ),
+        )}
+      </div>
     </div>
   );
 }
@@ -161,7 +170,7 @@ export function Canvas() {
         </span>
         <span className="ml-auto shrink-0">
           {PREVIEW_DIMENSIONS[state.viewport].width} ×{" "}
-          {PREVIEW_DIMENSIONS[state.viewport].minHeight} px · {state.viewport}
+          {PREVIEW_DIMENSIONS[state.viewport].height} px · {state.viewport}
         </span>
         <Button
           className="shrink-0 px-2 py-1.5 text-xs normal-case tracking-normal"

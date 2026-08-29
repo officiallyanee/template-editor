@@ -25,7 +25,7 @@ it("keeps the layer summary outside the independently scrolling layer list", () 
     "flex-1",
     "overflow-x-hidden",
     "overflow-y-auto",
-    "py-1",
+    "p-1",
   );
   expect(summary).toHaveClass("shrink-0");
 });
